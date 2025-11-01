@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Umamusume: HTML Edition</title>
+<link rel="shortcut icon" type="x-icon" href="uma.ico" />
+<link rel="stylesheet" href="uma.css">
+</head>
+<body>
+<div id="titleScreen" class="title-screen" aria-hidden="false">
+  <div id="ts_black" class="ts-black"></div>
+
+  <div id="ts_blocker" class="ts-blocker"></div>
+
+  <video id="ts_video" class="ts-video" preload="auto" playsinline webkit-playsinline muted>
+    <source src="umapyoi.mp4" type="video/mp4">
+  </video>
+
+  <div id="ts_playWrap" class="ts-playwrap" aria-hidden="true">
+    <img id="ts_playbtn" class="ts-playbtn" src="playbutton.png" alt="Play">
+    <div id="ts_playWhite" class="ts-playwhite" aria-hidden="true"></div>
+  </div>
+
+  <div id="ts_clickText" class="ts-clicktext">Click to continue</div>
+</div>
+
+<header>
+  <div>
+    <h1>Umamusume: HTML Edition</h1>
+    <div class="small muted">Create and train your own Umamusume. Let them compete against other Umamusume in races. Gain Fame to get up the ranks. Become the greatest Trainer ever!</div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- LEFT: profile & training -->
+  <div class="panel">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div>
+        <div style="font-weight:800">Player:</div>
+        <input id="playerName" type="text" placeholder="Your racer name" />
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="small muted">Title:</div>
+        <div id="playerTitle" class="title-badge">None</div>
+      </div>
+    </div>
+
+    <hr/>
+
+    <div class="small muted">Stats:</div>
+    <div id="statsGrid" class="stats-grid" style="margin-top:8px"></div>
+	
+	<div style="margin-top:8px">
+          <div class="small muted" style="margin-top:6px" id="daysUntilRace">Days until next Race: <b id="trainCount2">30</b></div>
+	</div>
+	
+	<hr/>
+	
+	<div>
+      <div class="small muted">Training</div>
+      <div id="trainingPanel" style="margin-top:8px">
+        <div class="small muted">Choose stat to train:</div>
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <button class="chip" data-stat="Speed">Speed</button>
+          <button class="chip" data-stat="Stamina">Stamina</button>
+          <button class="chip" data-stat="Power">Power</button>
+          <button class="chip" data-stat="Guts">Guts</button>
+          <button class="chip" data-stat="Wits">Wits</button>
+        </div>
+      </div>
+    </div>	
+    <div style="margin-top:8px">
+      <div class="small muted">Energy: <b id="energyVal">100</b></div>
+      <div class="Bar"><i id="energyBar" style="width:100%"></i></div>
+    </div>
+
+    <div style="margin-top:8px" class="flex">
+      <button id="doTrainBtn">Train</button>
+      <button id="restBtn" class="small-btn">Rest</button>
+      <button id="manualSaveBtn" class="small-btn">Save</button>
+    </div>
+
+    <hr/>
+
+    <div class="small muted">Profile</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div>Fame: <b id="fame">0</b></div>
+      <div>SP: <b id="sp">0</b></div>
+      <div>Races Done: <b id="racesDone">0</b></div>
+      <div>Win-Loss: <b id="winLoss">0-0</b></div>
+      <div>Train Count: <b id="trainCount">0</b></div>
+    </div>
+
+    <hr/>
+
+    <div>
+      <div class="small muted">Equipped</div>
+      <div style="margin-top:8px">Passives (<span id="passiveCount">0</span>/6): <div id="passivesEquip" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div></div>
+      <div style="margin-top:8px">Active: <div id="activeEquip" class="small muted">—</div></div>
+    </div>
+    <hr/>
+    <div>
+      <div class="small muted">Abilities Shop</div>
+      <div id="abilitiesShop" style="max-height:220px;overflow:auto;margin-top:8px"></div>
+    </div>
+
+    <hr/>
+
+    <div>
+      <div class="small muted">Leaderboard</div>
+      <div id="leaderboard" class="leaderboard" style="margin-top:8px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="retireBtn" class="small-btn">Retire Now</button>
+        <button id="resetAllBtn" class="small-btn">Reset All Progress</button>
+      </div>
+    </div>
+  
+  </div>
+
+  <!-- CENTER: races & commentary -->
+  <div class="panel race-area">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="flex:1">
+        <label>Choose Race:</label>
+        <select id="raceSelect" style="width:100%"></select>
+      </div>
+      <div>
+        <button id="enterRaceBtn">Enter Race</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <div style="flex:1">
+        <div class="small muted">Race Info</div>
+        <div id="raceInfo" style="padding:8px;margin-top:6px;background:rgba(255,255,255,0.02);border-radius:6px"></div>
+      </div>
+      <div style="width:220px">
+        <div class="small muted">Race Controls</div>
+        <div style="margin-top:6px;display:flex;gap:6px">
+          <button id="startRaceBtn">Start</button>
+          <button id="stopRaceBtn">Stop</button>
+          <button id="resetRaceBtn">End Race</button>
+        </div>
+        <div style="margin-top:8px">
+          <div class="small muted">Active Ability (E key)</div>
+          <div id="activeButtonWrap" style="margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <div style="flex:1">
+        <div class="small muted">Racers</div>
+        <div id="racersList" class="racers-list" style="margin-top:6px"></div>
+      </div>
+      
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="small muted">Race Time: <b id="raceTime">0.00s</b></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: training/abilities/leaderboard -->
+  <div class="panel">
+    <div style="width:340px">
+        <div class="small muted">Commentary</div>
+        <div id="commentary" class="commentary"></div>
+      </div>
+  </div>
+</div>
+<footer><i>Umamusume: Pretty Derby is owned by Cygames, Inc. © 2025&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Game Created by: Gabriel A. Barabar</i></footer>
+<script src="uma.js"></script>
+</body>
+</html>
