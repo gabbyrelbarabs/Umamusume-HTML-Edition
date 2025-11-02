@@ -55,6 +55,39 @@ function _applyWitsScalingToMod(mod) {
   }
 }
 
+function applyAbilityChanceModifiers(baseChance, racer){
+  if(typeof baseChance !== 'number' || !racer) return baseChance;
+  let mult = 1;
+  try{
+    if(racer._mods){
+      if(racer._mods.Concentrate && typeof racer._mods.Concentrate.chanceMultiplier === 'number'){
+        mult *= racer._mods.Concentrate.chanceMultiplier;
+      }
+      if(racer._mods.Focus && typeof racer._mods.Focus.chanceMultiplier === 'number'){
+        mult *= racer._mods.Focus.chanceMultiplier;
+      }
+    }
+  }catch(e){ console.warn("applyAbilityChanceModifiers err", e); }
+  return baseChance * mult;
+}
+
+function computeLateStartDelayWithModifiers(origDelay, racer){
+  if(typeof origDelay !== 'number' || !racer) return origDelay;
+  let mult = 1;
+  try{
+    if(racer._mods){
+      if(racer._mods.Concentrate && typeof racer._mods.Concentrate.lateStartDelayMultiplier === 'number'){
+        mult *= racer._mods.Concentrate.lateStartDelayMultiplier;
+      }
+      if(racer._mods.Focus && typeof racer._mods.Focus.lateStartDelayMultiplier === 'number'){
+        mult *= racer._mods.Focus.lateStartDelayMultiplier;
+      }
+    }
+  }catch(e){ console.warn("computeLateStartDelayWithModifiers err", e); }
+  const out = Math.max(0, Math.round(origDelay * mult));
+  return out;
+}
+
 /* -------------------------
   Races & Opponents (full data)
 ------------------------- */
@@ -567,7 +600,7 @@ const OPPONENT_SPECIALS = {
       setTimeout(()=>{ if(r._mods && r._mods.Tokai){ r.maxSpeed -= r._mods.Tokai.ms; delete r._mods.Tokai; } }, 8000);
     }
   },
-  "Mihino Bourbon": {
+  "Mihono Bourbon": {
     id: "G00 1st. F∞;",
     chance: 0.002, minPct: 40,
     activate: (r, rs) => {
@@ -801,7 +834,7 @@ const DRY_RUNNERS = [
 ];
 
 const WET_RUNNERS = [
-  "Gold Ship","Haru Urara","Agnes Tachyon","T.M. Opera O","Mihino Bourbon","KINCSEM"
+  "Gold Ship","Haru Urara","Agnes Tachyon","T.M. Opera O","Mihono Bourbon","KINCSEM"
 ];
 
 const VERSATILE_RUNNERS = [
@@ -822,7 +855,7 @@ const DEFAULT_PLAYER = {
   racesDone:0,
   wins:0,
   losses:0,
-  abilities:{unlockedPassives:[],unlockedActives:[],equippedPassives:[],equippedActive:null},
+  abilities:{unlockedPassives:[],unlockedActives:[],unlockedUniques:[],equippedPassives:[],equippedUnique: null,equippedActive:null},
   training:{counts:{Speed:0,Stamina:0,Power:0,Guts:0,Wits:0},levels:{Speed:1,Stamina:1,Power:1,Guts:1,Wits:1},totalTrains:0,locked:false,daysUntilRace:30,lockRaceCount:null},
   completed:{},
   highestTitle: "None",
@@ -840,96 +873,106 @@ if(!state.abilities) state.abilities = DEFAULT_PLAYER.abilities;
 ------------------------- */
 const ABILITIES = {
   passives: [
-    {id:"Dirty Runner", cost:50,
+    {id:"Dirty Runner", cost:50, desc: "",
       condition:(rs,p)=> rs.race.track === "Dirt",
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.DirtyRunner){ r._mods.DirtyRunner = r.maxSpeed*0.05; r.maxSpeed += r._mods.DirtyRunner; } },
       remove:(r)=>{ if(r._mods && r._mods.DirtyRunner){ r.maxSpeed -= r._mods.DirtyRunner; delete r._mods.DirtyRunner; } }
     },
-	{id:"Turf Runner", cost:80,
+	{id:"Turf Runner", cost:80, desc: "",
       condition:(rs,p)=> rs.race.track === "Turf",
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.TurfRunner){ r._mods.TurfRunner = r.maxSpeed*0.05; r.maxSpeed += r._mods.TurfRunner; } },
       remove:(r)=>{ if(r._mods && r._mods.TurfRunner){ r.maxSpeed -= r._mods.TurfRunner; delete r._mods.TurfRunner; } }
     },
-    {id:"Lucky Seven", cost:100,
+    {id:"Lucky Seven", cost:100, desc: "",
       condition:(rs,p)=> p.number===7,
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.LuckySeven){ r._mods.LuckySeven = {ms:r.maxSpeed*0.05,ac:r.acc*0.05}; r.maxSpeed += r._mods.LuckySeven.ms; r.acc += r._mods.LuckySeven.ac; } },
       remove:(r)=>{ if(r._mods && r._mods.LuckySeven){ r.maxSpeed -= r._mods.LuckySeven.ms; r.acc -= r._mods.LuckySeven.ac; delete r._mods.LuckySeven; } }
     },
-	{id: "Sunny Days", cost: 50,
+	{id: "Sunny Days", cost: 50, desc: "",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.SunnyDaysActive) { if (!rs || rs.weather !== "Sunny") { if (typeof r._mods.SunnyDays.prev === "number") r.maxSpeed = r._mods.SunnyDays.prev; delete r._mods.SunnyDaysActive; delete r._mods.SunnyDays; } return; } r._mods.SunnyDaysActive = true; r._mods.SunnyDays = r._mods.SunnyDays || {}; r._mods.SunnyDays.prev = r.maxSpeed || 0; if (rs && rs.weather === "Sunny") r.maxSpeed = (r.maxSpeed || 0) * 1.08; else r.maxSpeed = (r.maxSpeed || 0) * 0.92; },
 	  remove: (r) => { if (!r._mods || !r._mods.SunnyDays) return; if (typeof r._mods.SunnyDays.prev === "number") r.maxSpeed = r._mods.SunnyDays.prev; delete r._mods.SunnyDays; delete r._mods.SunnyDaysActive; }
 	},
-	{id: "Cloudy Days", cost: 50,
+	{id: "Cloudy Days", cost: 50, desc: "",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.CloudyDaysActive) { if (!rs || rs.weather !== "Cloudy") { if (typeof r._mods.CloudyDays.prev === "number") r.maxSpeed = r._mods.CloudyDays.prev; if (typeof r._mods.CloudyDays.prevAcc === "number") r.acc = r._mods.CloudyDays.prevAcc; delete r._mods.CloudyDaysActive; delete r._mods.CloudyDays; } return; } r._mods.CloudyDaysActive = true; r._mods.CloudyDays = r._mods.CloudyDays || {}; r._mods.CloudyDays.prev = r.maxSpeed || 0; r._mods.CloudyDays.prevAcc = r.acc || 0; if (rs && rs.weather === "Cloudy") { if (rs.track === "Good" && r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') { r.maxSpeed = (r._mods._prev.maxSpeed || 0) * 1.05; } else { r.maxSpeed = (r.maxSpeed || 0) * 1.05; } } else { r.maxSpeed = (r.maxSpeed || 0) * 0.95; } },
 	  remove: (r) => { if (!r._mods || !r._mods.CloudyDays) return; if (typeof r._mods.CloudyDays.prev === "number") r.maxSpeed = r._mods.CloudyDays.prev; if (typeof r._mods.CloudyDays.prevAcc === "number") r.acc = r._mods.CloudyDays.prevAcc; delete r._mods.CloudyDays; delete r._mods.CloudyDaysActive; }
 	},
-	{id: "Rainy Days", cost: 50,
+	{id: "Rainy Days", cost: 50, desc: "",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.RainyDaysActive) { if (!rs || rs.weather !== "Rainy") { if (typeof r._mods.RainyDays.prev === "number") r.maxSpeed = r._mods.RainyDays.prev; if (typeof r._mods.RainyDays.prevAcc === "number") r.acc = r._mods.RainyDays.prevAcc; delete r._mods.RainyDaysActive; delete r._mods.RainyDays; } return; } r._mods.RainyDaysActive = true; r._mods.RainyDays = r._mods.RainyDays || {}; r._mods.RainyDays.prev = r.maxSpeed || 0; r._mods.RainyDays.prevAcc = r.acc || 0; if (rs && rs.weather === "Rainy") { if (rs.track === "Wet" && r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') { r.maxSpeed = (r._mods._prev.maxSpeed || 0) * 1.05; r.acc = (r._mods._prev.acc || 0); } else { r.maxSpeed = (r.maxSpeed || 0) * 1.05; } } else { r.maxSpeed = (r.maxSpeed || 0) * 0.95; } },
 	  remove: (r) => { if (!r._mods || !r._mods.RainyDays) return; if (typeof r._mods.RainyDays.prev === "number") r.maxSpeed = r._mods.RainyDays.prev; if (typeof r._mods.RainyDays.prevAcc === "number") r.acc = r._mods.RainyDays.prevAcc; delete r._mods.RainyDays; delete r._mods.RainyDaysActive; }
 	},
-	{id: "Firm Conditions", cost: 100,
+	{id: "Firm Conditions", cost: 100, desc: "",
 	  condition: (rs,p) => { if (!rs||!p) return false; return rs.track === "Firm"; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.FirmConditionsActive) return; r._mods.FirmConditionsActive = true; r._mods.FirmConditions = r._mods.FirmConditions || {}; r._mods.FirmConditions.prev = r.maxSpeed || 0; r.maxSpeed = (r.maxSpeed || 0) * 1.05; },
 	  remove: (r) => { if (!r._mods || !r._mods.FirmConditions) return; if (typeof r._mods.FirmConditions.prev === "number") r.maxSpeed = r._mods.FirmConditions.prev; delete r._mods.FirmConditions; delete r._mods.FirmConditionsActive; }
 	},
-	{id: "Wet Conditions", cost: 100,
+	{id: "Wet Conditions", cost: 100, desc: "",
 	  condition: (rs,p) => { if (!rs||!p) return false; return rs.track === "Good" || rs.track === "Wet"; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.WetConditionsActive) return; r._mods.WetConditionsActive = true; r._mods.WetConditions = r._mods.WetConditions || {}; r._mods.WetConditions.prev = r.maxSpeed || 0; r.maxSpeed = (r.maxSpeed || 0) * 1.10; },
 	  remove: (r) => { if (!r._mods || !r._mods.WetConditions) return; if (typeof r._mods.WetConditions.prev === "number") r.maxSpeed = r._mods.WetConditions.prev; delete r._mods.WetConditions; delete r._mods.WetConditionsActive; }
 	},
-    {id:"Competitive", cost:100,
+	{id: "Focus", cost: 100, desc: "Increase timing, keep calm, and decrease time lost to Late Starts.",
+	  condition: (rs, p) => !!p,
+	  apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.Focus){ r._mods.Focus = { chanceMultiplier: 0.5, lateStartDelayMultiplier: 0.5 }; } else { r._mods.Focus.chanceMultiplier = 0.5; r._mods.Focus.lateStartDelayMultiplier = 0.5; } },
+      remove: (r, rs) => { if(r && r._mods && r._mods.Focus) try{ delete r._mods.Focus; }catch(e){} }
+	},
+	{id: "Concentrate", cost: 200, desc: "Maximize timing and stay out of pressure.",
+	  condition: (rs, p) => !!p,
+	  apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.Concentrate){ r._mods.Concentrate = { chanceMultiplier: 0.0, lateStartDelayMultiplier: 0.0 }; } else { r._mods.Concentrate.chanceMultiplier = 0.0; r._mods.Concentrate.lateStartDelayMultiplier = 0.0; } },
+	  remove: (r, rs) => { if(r && r._mods && r._mods.Concentrate) try{ delete r._mods.Concentrate; }catch(e){} }
+	},
+    {id:"Competitive", cost:100, desc: "",
       condition:(rs,p)=> { let near = 0; for(const o of rs.field) if(o!==p && Math.abs(o.pos - p.pos)/Math.max(1, rs.race.distance) <= 0.03) near++; return near >= 2; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Competitive){ r._mods.Competitive = {ms:r.maxSpeed*0.10,expires: rs.time + 5}; r.maxSpeed += r._mods.Competitive.ms; } },
       remove:(r)=>{ if(r._mods && r._mods.Competitive){ r.maxSpeed -= r._mods.Competitive.ms; delete r._mods.Competitive; } }
     },
-    {id:"Patience Is Key", cost:100,
+    {id:"Patience Is Key", cost:100, desc: "",
       condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>2 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Patience){ r._mods.Patience = {ms:r.maxSpeed*0.05,ac:r.acc*0.05}; r.maxSpeed += r._mods.Patience.ms; r.acc += r._mods.Patience.ac; } },
       remove:(r)=>{ if(r._mods && r._mods.Patience){ r.maxSpeed -= r._mods.Patience.ms; r.acc -= r._mods.Patience.ac; delete r._mods.Patience; } }
     },
-    {id:"Confidence", cost:100,
+    {id:"Confidence", cost:100, desc: "",
       condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank<=3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.ConfidenceUsed) { const __st = (r.staminaMax * 0.5) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.ConfidenceUsed = true; } },
       remove:(r)=>{}
     },
-    {id:"Iron Will", cost:100,
+    {id:"Iron Will", cost:100, desc: "",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.IronWillUsed){ const __st = (r.staminaMax * 0.6) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.IronWillUsed=true; } },
       remove:(r)=>{}
     },
-    {id:"Cool Down", cost:100,
+    {id:"Cool Down", cost:100, desc: "",
       condition:(rs,p)=> false,
       apply:(r,rs)=>{},
       remove:(r)=>{}
     },
-    {id:"Breath of Fresh Air", cost:100,
+    {id:"Breath of Fresh Air", cost:100, desc: "",
       condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank<=3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.BreathUsed){ const __st = (r.staminaMax * 0.4) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.BreathUsed=true; } },
       remove:(r)=>{}
     },
-    {id:"Unchanging", cost:100,
+    {id:"Unchanging", cost:100, desc: "",
       condition:(rs,p)=> { const pct=(p.pos/rs.race.distance)*100; return (p.startRank === getCurrentRank(rs,p)) && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.UnchangingUsed){ const __st = (r.staminaMax * 0.5) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.UnchangingUsed=true; } },
       remove:(r)=>{}
     },
-    {id: "Oh No You Don’t!", cost: 100,
+    {id: "Oh No You Don’t!", cost: 100, desc: "",
 	  condition: (rs,p) => false,
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.OhNoYouDontActive) return; let progress = null; if (typeof rs.progress === 'number') progress = rs.progress; else if (typeof rs.distance === 'number' && typeof r.distance === 'number' && rs.distance > 0) progress = r.distance / rs.distance; if (progress === null || progress < 0.5) return; const amount = 0.10; r._mods.OhNoYouDontActive = true; r._mods.OhNoYouDont = r._mods.OhNoYouDont || {}; r._mods.OhNoYouDont.prevMaxSpeed = r.maxSpeed || 0; r._mods.OhNoYouDont.amount = amount; r.maxSpeed = (r.maxSpeed || 0) * (1 + amount); try { r._mods.OhNoYouDont.expires = (rs.time !== undefined) ? (rs.time + 5) : (Date.now()/1000 + 5); } catch(e) { r._mods.OhNoYouDont.expires = Date.now()/1000 + 5; }
 	  },
 	  remove: (r) => { if (!r._mods || !r._mods.OhNoYouDont) return; if (typeof r._mods.OhNoYouDont.prevMaxSpeed === 'number') r.maxSpeed = r._mods.OhNoYouDont.prevMaxSpeed; delete r._mods.OhNoYouDont; delete r._mods.OhNoYouDontActive;
 	  }
 	},
-	{id: "It’s On!", cost: 100,
+	{id: "It’s On!", cost: 100, desc: "",
 	  condition: (rs,p) => false,
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.ItsOnUsed) return; let progress = null; if (typeof rs.progress === 'number') progress = rs.progress; else if (typeof rs.distance === 'number' && typeof r.distance === 'number' && rs.distance > 0) progress = r.distance / rs.distance; if (progress === null || progress < 0.5) return; const amount = 0.60; const addStamina = (r.staminaMax || 0) * amount; r.stamina = clamp((r.stamina || 0) + addStamina, 0, r.staminaMax || ((r.stamina || 0) + addStamina)); r._mods.ItsOnUsed = true;
 	  },
 	  remove: (r) => { if (!r._mods) return; delete r._mods.ItsOnUsed;
 	  }
 	},
-    {id:"I Understand It Now", cost:150,
+    {id:"I Understand It Now", cost:150, desc: "",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return (rank===2||rank===3) && pct>=26; },
       apply:(r,rs)=>{
         const sorted = [...rs.field].sort((a,b)=>b.pos-a.pos);
@@ -939,22 +982,132 @@ const ABILITIES = {
       },
       remove:(r)=>{ if(r._mods && r._mods.CopySpeed){ r.acc = r._mods.CopySpeed.acc; r.maxSpeed = r._mods.CopySpeed.ms; delete r._mods.CopySpeed; } }
     },
-    {id:"Aura", cost:150,
+    {id:"Aura", cost:150, desc: "",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>=6 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Aura){ r._mods.Aura={ms:r.maxSpeed*0.5,ac:r.acc*0.5,expires:rs.time+5}; r.maxSpeed += r._mods.Aura.ms; r.acc += r._mods.Aura.ac; } },
       remove:(r)=>{ if(r._mods && r._mods.Aura){ r.maxSpeed -= r._mods.Aura.ms; r.acc -= r._mods.Aura.ac; delete r._mods.Aura; } },
     }
   ],
+  uniques: [
+    {
+      id: "End Closer",
+      cost: 50,
+      desc: "Conserve energy for a powerful burst in the final stretch.",
+      condition: (rs, p) => !!rs && !!p,
+      apply: (r, rs) => {
+        r._mods = r._mods || {};
+        // snapshot prev values once
+        if(!r._mods.EndCloser) r._mods.EndCloser = { prevMax: r.maxSpeed, prevAcc: r.acc, prevRegen: r.regenPerTick };
+        const baseMax = (r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.EndCloser.prevMax || r.maxSpeed;
+        const baseAcc = (r._mods && r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.EndCloser.prevAcc || r.acc;
+        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
+        if(pct < 90){
+          // conservative phase
+          r.maxSpeed = (baseMax || 0) * 0.96;
+          r.acc = (baseAcc || 0) * 0.96;
+          r._mods.EndCloser.dmult = 0.95; // lower drain (will be respected by the drain loop)
+        } else {
+          // final 10% spike
+          r.maxSpeed = (baseMax || 0) * 1.15;
+          r.acc = (baseAcc || 0) * 1.20;
+          r._mods.EndCloser.dmult = 0.67; // much lower drain on final sprint
+        }
+      },
+      remove: (r) => {
+        if(!r._mods || !r._mods.EndCloser) return;
+        if(typeof r._mods.EndCloser.prevMax === 'number') r.maxSpeed = r._mods.EndCloser.prevMax;
+        if(typeof r._mods.EndCloser.prevAcc === 'number') r.acc = r._mods.EndCloser.prevAcc;
+        if(typeof r._mods.EndCloser.prevRegen === 'number') r.regenPerTick = r._mods.EndCloser.prevRegen;
+        delete r._mods.EndCloser;
+      }
+    },
+
+    {
+      id: "Late Surger",
+      cost: 50,
+      desc: "Conserve energy for boost in performance in the second half of the race.",
+      condition: (rs, p) => !!rs && !!p,
+      apply: (r, rs) => {
+        r._mods = r._mods || {};
+        if(!r._mods.LateSurger) r._mods.LateSurger = { prevMax: r.maxSpeed, prevAcc: r.acc };
+        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.LateSurger.prevMax || r.maxSpeed;
+        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.LateSurger.prevAcc || r.acc;
+        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
+        if(pct >= 75){
+          r.maxSpeed = (baseMax || 0) * 1.08;
+          r.acc = (baseAcc || 0) * 1.08;
+        } else {
+          // keep previous (remove will revert)
+          if(r._mods.LateSurger && r._mods.LateSurger._inactive) { /* noop */ }
+        }
+      },
+      remove: (r) => {
+        if(!r._mods || !r._mods.LateSurger) return;
+        if(typeof r._mods.LateSurger.prevMax === 'number') r.maxSpeed = r._mods.LateSurger.prevMax;
+        if(typeof r._mods.LateSurger.prevAcc === 'number') r.acc = r._mods.LateSurger.prevAcc;
+        delete r._mods.LateSurger;
+      }
+    },
+
+    {
+      id: "Pace Chaser",
+      cost: 50,
+      desc: "Keeps you nice and steady for the whole race.",
+      condition: (rs,p) => !!rs && !!p,
+      apply: (r, rs) => {
+        r._mods = r._mods || {};
+        if(!r._mods.PaceChaser) r._mods.PaceChaser = { prevMax: r.maxSpeed, prevAcc: r.acc };
+        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.PaceChaser.prevMax || r.maxSpeed;
+        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.PaceChaser.prevAcc || r.acc;
+        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
+        if(pct >= 75){
+          r.maxSpeed = (baseMax || 0) * 1.05;
+          r.acc = (baseAcc || 0) * 1.05;
+        } else if(pct >= 25){
+          r.maxSpeed = (baseMax || 0) * 1.02;
+          r.acc = (baseAcc || 0) * 1.02;
+        }
+      },
+      remove: (r) => {
+        if(!r._mods || !r._mods.PaceChaser) return;
+        if(typeof r._mods.PaceChaser.prevMax === 'number') r.maxSpeed = r._mods.PaceChaser.prevMax;
+        if(typeof r._mods.PaceChaser.prevAcc === 'number') r.acc = r._mods.PaceChaser.prevAcc;
+        delete r._mods.PaceChaser;
+      }
+    },
+
+    {
+      id: "Front Runner",
+      cost: 50,
+      desc: "Put in maximum effort to keep the lead for the whole race.",
+      condition: (rs,p) => !!rs && !!p,
+      apply: (r, rs) => {
+        r._mods = r._mods || {};
+        if(!r._mods.FrontRunner) r._mods.FrontRunner = { prevMax: r.maxSpeed, prevAcc: r.acc, dm: 1.05 };
+        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.FrontRunner.prevMax || r.maxSpeed;
+        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.FrontRunner.prevAcc || r.acc;
+        r.maxSpeed = (baseMax || 0) * 1.05;
+        r.acc = (baseAcc || 0) * 1.05;
+        r._mods.FrontRunner.dmult = 1.05; // increases stamina drain by 5%
+      },
+      remove: (r) => {
+        if(!r._mods || !r._mods.FrontRunner) return;
+        if(typeof r._mods.FrontRunner.prevMax === 'number') r.maxSpeed = r._mods.FrontRunner.prevMax;
+        if(typeof r._mods.FrontRunner.prevAcc === 'number') r.acc = r._mods.FrontRunner.prevAcc;
+        delete r._mods.FrontRunner;
+      }
+    }
+  ],
   actives: [
-    {id:"Plus Ultra!", cost:150, fn:"plusUltra"},
-    {id:"No… Not Yet!", cost:150, fn:"regen70"},
-    {id:"I Am Not Giving Up Now!", cost:200, fn:"comeback"},
-    {id:"Plan B", cost:150, fn:"planB"},
-    {id:"Triumphant Pulse", cost:200, fn:"triumph"},
-	{id:"Red Shift", cost:200, fn:"redshift"},
-	{id:"Swinging Maestro", cost:200, fn:"swing"},
-    {id:"Must Go Even Further Beyond!", cost:200, fn:"furtherBeyond"},
-    {id:"Gotcha!", cost:150, fn:"gotcha"}
+    {id:"Plus Ultra!", cost:150, desc: "",fn:"plusUltra"},
+    {id:"No… Not Yet!", cost:150, desc: "", fn:"regen70"},
+    {id:"I Am Not Giving Up Now!", cost:200, desc: "", fn:"comeback"},
+    {id:"Plan B", cost:150, desc: "", fn:"planB"},
+    {id:"Triumphant Pulse", cost:200, desc: "", fn:"triumph"},
+	{id:"Red Shift", cost:200, desc: "", fn:"redshift"},
+	{id:"Swinging Maestro", cost:200, desc: "", fn:"swing"},
+    {id:"Must Go Even Further Beyond!", cost:200, desc: "", fn:"furtherBeyond"},
+    {id:"Gotcha!", cost:150, desc: "", fn:"gotcha"}
   ]
 };
 
@@ -1042,305 +1195,315 @@ function populateRaces(){
   Render player UI (stats bars, energy)
 ------------------------- */
 function refreshPlayerUI(){
-  // ensure custom cursor doesn't block pointer events (fix for hover issues)
   try {
-    const cc = document.querySelector(".uma-cursor");
-    if(cc) cc.style.pointerEvents = "none";
-  } catch(e){}
+    // small helpers
+    const getEl = (id) => {
+      try { return el(id); } catch(e){ return null; }
+    };
+    const setText = (id, txt) => { const e = getEl(id); if(e) e.textContent = txt; };
+    const setValue = (id, v) => { const e = getEl(id); if(e) e.value = v; };
 
-  el("playerName").value = state.name;
-  el("energyVal").textContent = Math.round(state.energy);
-  el("energyBar").style.width = clamp(state.energy,0,100) + "%";
-  el("fame").textContent = Math.round(state.fame);
-  el("sp").textContent = Math.round(state.sp);
-  el("racesDone").textContent = state.racesDone || 0;
-  
-  const totalTrains = state.training.totalTrains || 0;
-  el("trainCount").textContent = totalTrains;
-  const DAYS_REQUIRED = 30;
-  const daysLeft = Math.max(0, DAYS_REQUIRED - totalTrains);
-  
-  if(el("daysUntilRace")){
-    if (daysLeft > 0) {
-      el("daysUntilRace").textContent = `Days until next Race: ${daysLeft}`;
-    } else {
-      el("daysUntilRace").textContent = `It's Race Day!`;
-    }
-  } else {
-    if (daysLeft > 0) {
-      if(el("trainCount2")) el("trainCount2").textContent = `Days until next Race: ${daysLeft}`;
-    } else {
-      if(el("trainCount2")) el("trainCount2").textContent = `It's Race Day!`;
-    }
-  }
-  
-  el("passiveCount").textContent = state.abilities.equippedPassives.length || 0;
-  el("activeEquip").textContent = state.abilities.equippedActive || "—";
-  el("winLoss").textContent = `${state.wins||0}-${state.losses||0}`;
-  updateTitle();
+    // defensive state defaults
+    state = state || {};
+    state.stats = state.stats || {};
+    state.training = state.training || {};
+    state.abilities = state.abilities || { equippedPassives: [], equippedActive: null, unlockedActives: [] };
 
-  // Stats grid
-  const grid = el("statsGrid"); if(!grid) return;
-  grid.innerHTML = "";
-  // helper for rank & color
-  function statRankAndColor(val){
-    if(val >= 1200) return {rank:"U", color:"#4B0076"};
-    if(val >= 1100) return {rank:"SS+", color:"#D4AF37"};
-    if(val >= 1000) return {rank:"SS", color:"#D4AF37"};
-    if(val >= 900) return {rank:"S+", color:"#D4AF37"};
-    if(val >= 800) return {rank:"S", color:"#D4AF37"};
-    if(val >= 750) return {rank:"A+", color:"#FF3333"};
-    if(val >= 700) return {rank:"A", color:"#FF3333"};
-    if(val >= 650) return {rank:"B+", color:"#FF66B2"};
-    if(val >= 600) return {rank:"B", color:"#FF66B2"};
-    if(val >= 550) return {rank:"C+", color:"#28A745"};
-    if(val >= 500) return {rank:"C", color:"#28A745"};
-    if(val >= 450) return {rank:"D+", color:"#6EC0FF"};
-    if(val >= 400) return {rank:"D", color:"#6EC0FF"};
-    if(val >= 350) return {rank:"E+", color:"#CDA7FF"};
-    if(val >= 300) return {rank:"E", color:"#CDA7FF"};
-    if(val >= 250) return {rank:"F+", color:"#6e6e6e"};
-    if(val >= 200) return {rank:"F", color:"#6e6e6e"};
-    if(val >= 150) return {rank:"G+", color:"#808080"};
-    return {rank:"G", color:"#808080"};
-  }
+    // ensure custom cursor doesn't block pointer events (fix for hover issues)
+    try {
+      const cc = document.querySelector(".uma-cursor");
+      if(cc) cc.style.pointerEvents = "none";
+    } catch(e){ /* ignore */ }
 
-  // stat descriptions (short)
-  const STAT_DESCS = {
-    "Speed": "Increases top speed and velocity — allowing you to outspeed opponents.",
-    "Stamina": "Increases max stamina — allowing you to go at max speed for longer durations.",
-    "Power": "Increases acceleration — allowing you to recover and reach your top speed faster.",
-    "Guts": "Increases stamina regeneration and decreases speed penalty — allowing you to keep your position in control, recover and accelerate back to top speed much faster.",
-    "Wits": "Increases ability effectiveness and duration, timing, and helps keep you at ease."
-  };
+    // basic top-line UI
+    setValue("playerName", state.name || "");
+    setText("energyVal", Math.round(state.energy || 0));
+    const eb = getEl("energyBar");
+    if(eb) eb.style.width = clamp(Number(state.energy) || 0, 0, 100) + "%";
+    setText("fame", Math.round(state.fame || 0));
+    setText("sp", Math.round(state.sp || 0));
+    setText("racesDone", state.racesDone || 0);
 
-function showFailTooltipForHost(host, statName){
-  try{
-    const info = getTrainingChanceAndMultiplier(state.energy || 0) || {};
-    let fail = typeof info.fail === "number" ? info.fail : 0;
-    if(fail > 1) fail = 1;
-    const pctFail = Math.round(Math.min(Math.max(fail * 100, 0), 100));
+    const totalTrains = state.training.totalTrains || 0;
+    setText("trainCount", totalTrains);
+    const DAYS_REQUIRED = 30;
+    const daysLeft = Math.max(0, DAYS_REQUIRED - totalTrains);
 
-    // determine gradient + inner tail color based on fail %
-    let gradient = "linear-gradient(180deg,#00bbff 0%, #006eff 67%)";
-    let innerTailColor = "#006eff";
-    if(pctFail > 45){
-      gradient = "linear-gradient(180deg,#ff3b3b 0%, #8B0000 67%)";
-      innerTailColor = "#8B0000";
-    } else if(pctFail > 20){
-      gradient = "linear-gradient(180deg,#FFDB58 0%, #FF8C00 67%)";
-      innerTailColor = "#FF8C00";
+    const daysUntilEl = getEl("daysUntilRace") || getEl("trainCount2");
+    if(daysUntilEl){
+      daysUntilEl.textContent = (daysLeft > 0) ? `Days until next Race: ${daysLeft}` : `It's Race Day!`;
     }
 
-    // determine whether we should show the big "Failure: X%" line
-    const showFailTop = !!(host && host.classList && host.classList.contains('chip'));
+    // abilities/stats header
+    setText("passiveCount", (state.abilities.equippedPassives && state.abilities.equippedPassives.length) ? state.abilities.equippedPassives.length : 0);
+    setText("activeEquip", state.abilities.equippedActive || "—");
+    setText("winLoss", `${state.wins||0}-${state.losses||0}`);
+    if(typeof updateTitle === "function") try{ updateTitle(); }catch(e){ console.warn("updateTitle error", e); }
 
-    let tip = host.querySelector(".fail-tooltip");
-    if(!tip){
-      // chat bubble container (below the host)
-      tip = document.createElement("div");
-      tip.className = "fail-tooltip";
-      tip.innerHTML = `
-        <div class="fail-top"></div>
-        <div class="stat-block">
-          <div class="stat-title"></div>
-          <div class="stat-desc"></div>
-        </div>
-        <div class="fail-tail-border"></div>
-        <div class="fail-tail"></div>
-      `;
-
-      // core bubble styles: width = 150% of host, capped
-      Object.assign(tip.style, {
-        display: "none",
-        position: "absolute",
-        left: "50%",
-        top: "calc(100% + 8px)",
-        transform: "translateX(-50%)",
-        width: "150px",
-        background: gradient,
-        color: "#fff",
-        padding: "8px 10px",
-        fontSize: "13px",
-        fontWeight: "700",
-        pointerEvents: "none",
-        zIndex: "9999",
-        borderRadius: "8px",
-        boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
-        border: "1.8px solid #ffffff",
-        textAlign: "center"
-      });
-
-      // fail-top (shows failure % prominently, above stat info)
-      const ft = tip.querySelector(".fail-top");
-      Object.assign(ft.style, {
-        color: "#fff",
-        fontWeight: "800",
-        fontSize: "12px",
-        marginBottom: "6px",
-        display: "block",
-        lineHeight: "1"
-      });
-
-      // stat block title
-      const st = tip.querySelector(".stat-title");
-      Object.assign(st.style, {
-        color: "#fff",
-        fontWeight: "800",
-        fontSize: "13px",
-        marginBottom: "4px"
-      });
-
-      // stat description
-      const sd = tip.querySelector(".stat-desc");
-      Object.assign(sd.style, {
-        color: "#fff",
-        fontWeight: "600",
-        fontSize: "12px",
-        lineHeight: "1.2",
-        opacity: "0.98"
-      });
-
-      // tail border (white)
-      const tailBorder = tip.querySelector(".fail-tail-border");
-      Object.assign(tailBorder.style, {
-        position: "absolute",
-        left: "calc(50% - 9px)",
-        top: "-10px",
-        width: "0",
-        height: "0",
-        borderLeft: "9px solid transparent",
-        borderRight: "9px solid transparent",
-        borderBottom: "10px solid #ffffff",
-        pointerEvents: "none",
-        zIndex: "10000"
-      });
-
-      // inner tail (will be set below to match gradient)
-      const tail = tip.querySelector(".fail-tail");
-      Object.assign(tail.style, {
-        position: "absolute",
-        left: "calc(50% - 7px)",
-        top: "-8px",
-        width: "0",
-        height: "0",
-        borderLeft: "7px solid transparent",
-        borderRight: "7px solid transparent",
-        pointerEvents: "none",
-        zIndex: "10001"
-      });
-
-      // ensure host has positioning context
-      if(!host.style.position) host.style.position = "relative";
-      host.appendChild(tip);
+    // Stats grid (if present)
+    const grid = getEl("statsGrid");
+    if(grid) {
+      grid.innerHTML = "";
     }
 
-    // update gradient & tail color even if tooltip already exists
-    tip.style.background = gradient;
-    const innerTail = tip.querySelector(".fail-tail");
-    if(innerTail){
-      innerTail.style.borderBottom = "8px solid " + innerTailColor;
+    // helper for rank & color
+    function statRankAndColor(val){
+      val = Number.isFinite(val) ? val : 0;
+      if(val >= 1200) return {rank:"U", color:"#4B0076"};
+      if(val >= 1100) return {rank:"SS+", color:"#D4AF37"};
+      if(val >= 1000) return {rank:"SS", color:"#D4AF37"};
+      if(val >= 900) return {rank:"S+", color:"#D4AF37"};
+      if(val >= 800) return {rank:"S", color:"#D4AF37"};
+      if(val >= 750) return {rank:"A+", color:"#FF3333"};
+      if(val >= 700) return {rank:"A", color:"#FF3333"};
+      if(val >= 650) return {rank:"B+", color:"#FF66B2"};
+      if(val >= 600) return {rank:"B", color:"#FF66B2"};
+      if(val >= 550) return {rank:"C+", color:"#28A745"};
+      if(val >= 500) return {rank:"C", color:"#28A745"};
+      if(val >= 450) return {rank:"D+", color:"#6EC0FF"};
+      if(val >= 400) return {rank:"D", color:"#6EC0FF"};
+      if(val >= 350) return {rank:"E+", color:"#CDA7FF"};
+      if(val >= 300) return {rank:"E", color:"#CDA7FF"};
+      if(val >= 250) return {rank:"F+", color:"#6e6e6e"};
+      if(val >= 200) return {rank:"F", color:"#6e6e6e"};
+      if(val >= 150) return {rank:"G+", color:"#808080"};
+      return {rank:"G", color:"#808080"};
     }
 
-    const ftEl = tip.querySelector(".fail-top");
-	const titleEl = tip.querySelector(".stat-title");
-    const descEl = tip.querySelector(".stat-desc");
-    if(ftEl){
-      if(showFailTop){
-        ftEl.textContent = `Failure: ${pctFail}%`;
-        ftEl.style.display = 'block';
-      } else {
-		if(titleEl) titleEl.textContent = statName || "";
-        ftEl.style.display = 'none';
+    const STAT_DESCS = {
+      "Speed": "Increases top speed and velocity — allowing you to outspeed opponents.",
+      "Stamina": "Increases max stamina — allowing you to go at max speed for longer durations.",
+      "Power": "Increases acceleration — allowing you to recover and reach your top speed faster.",
+      "Guts": "Increases stamina regeneration and decreases speed penalty — allowing you to keep your position in control, recover and accelerate back to top speed much faster.",
+      "Wits": "Increases ability effectiveness and duration, timing, and helps keep you at ease."
+    };
+
+    // tooltip functions (defined once)
+    function showFailTooltipForHost(host, statName){
+      if(!host) return;
+      try{
+        const info = (typeof getTrainingChanceAndMultiplier === "function") ? getTrainingChanceAndMultiplier(state.energy || 0) : {};
+        let fail = typeof info.fail === "number" ? info.fail : 0;
+        if(fail > 1) fail = 1;
+        const pctFail = Math.round(Math.min(Math.max(fail * 100, 0), 100));
+
+        // gradient/color selection
+        let gradient = "linear-gradient(180deg,#00bbff 0%, #006eff 67%)";
+        let innerTailColor = "#006eff";
+        if(pctFail > 45){
+          gradient = "linear-gradient(180deg,#ff3b3b 0%, #8B0000 67%)";
+          innerTailColor = "#8B0000";
+        } else if(pctFail > 20){
+          gradient = "linear-gradient(180deg,#FFDB58 0%, #FF8C00 67%)";
+          innerTailColor = "#FF8C00";
+        }
+
+        const showFailTop = !!(host && host.classList && host.classList.contains('chip'));
+
+        let tip = host.querySelector(".fail-tooltip");
+        if(!tip){
+          tip = document.createElement("div");
+          tip.className = "fail-tooltip";
+          tip.innerHTML = `
+            <div class="fail-top"></div>
+            <div class="stat-block">
+              <div class="stat-title"></div>
+              <div class="stat-desc"></div>
+            </div>
+            <div class="fail-tail-border"></div>
+            <div class="fail-tail"></div>
+          `;
+          Object.assign(tip.style, {
+            display: "none",
+            position: "absolute",
+            left: "50%",
+            top: "calc(100% + 8px)",
+            transform: "translateX(-50%)",
+            width: "150px",
+            background: gradient,
+            color: "#fff",
+            padding: "8px 10px",
+            fontSize: "13px",
+            fontWeight: "700",
+            pointerEvents: "none",
+            zIndex: "9999",
+            borderRadius: "8px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+            border: "1.8px solid #ffffff",
+            textAlign: "center"
+          });
+
+          const ft = tip.querySelector(".fail-top");
+          if(ft) Object.assign(ft.style, { color: "#fff", fontWeight: "800", fontSize: "12px", marginBottom: "6px", display: "block", lineHeight: "1" });
+
+          const st = tip.querySelector(".stat-title");
+          if(st) Object.assign(st.style, { color: "#fff", fontWeight: "800", fontSize: "13px", marginBottom: "4px" });
+
+          const sd = tip.querySelector(".stat-desc");
+          if(sd) Object.assign(sd.style, { color: "#fff", fontWeight: "600", fontSize: "12px", lineHeight: "1.2", opacity: "0.98" });
+
+          const tailBorder = tip.querySelector(".fail-tail-border");
+          if(tailBorder) Object.assign(tailBorder.style, {
+            position: "absolute",
+            left: "calc(50% - 9px)",
+            top: "-10px",
+            width: "0",
+            height: "0",
+            borderLeft: "9px solid transparent",
+            borderRight: "9px solid transparent",
+            borderBottom: "10px solid #ffffff",
+            pointerEvents: "none",
+            zIndex: "10000"
+          });
+
+          const tail = tip.querySelector(".fail-tail");
+          if(tail) Object.assign(tail.style, {
+            position: "absolute",
+            left: "calc(50% - 7px)",
+            top: "-8px",
+            width: "0",
+            height: "0",
+            borderLeft: "7px solid transparent",
+            borderRight: "7px solid transparent",
+            pointerEvents: "none",
+            zIndex: "10001"
+          });
+
+          if(!host.style.position) host.style.position = "relative";
+          host.appendChild(tip);
+        }
+
+        // update visuals
+        tip.style.background = gradient;
+        const innerTail = tip.querySelector(".fail-tail");
+        if(innerTail) innerTail.style.borderBottom = "8px solid " + innerTailColor;
+
+        const ftEl = tip.querySelector(".fail-top");
+        const titleEl = tip.querySelector(".stat-title");
+        const descEl = tip.querySelector(".stat-desc");
+
+        if(ftEl){
+          if(showFailTop){
+            ftEl.textContent = `Failure: ${pctFail}%`;
+            ftEl.style.display = 'block';
+          } else {
+            if(titleEl) titleEl.textContent = statName || "";
+            ftEl.style.display = 'none';
+          }
+        }
+        if(descEl) descEl.textContent = STAT_DESCS[statName] || "";
+
+        tip.style.display = "block";
+        tip.style.opacity = "1";
+      }catch(err){
+        console.warn("showFailTooltipForHost error", err);
       }
     }
 
-    if(descEl) descEl.textContent = STAT_DESCS[statName] || "";
+    function hideFailTooltipForHost(host){
+      if(!host) return;
+      const tip = host.querySelector(".fail-tooltip");
+      if(tip) tip.style.display = "none";
+    }
 
-    tip.style.display = "block";
-    tip.style.opacity = "1";
-  } catch(err){
-    console.warn("showFailTooltipForHost error", err);
-  }
-}
-  function hideFailTooltipForHost(host){
-    const tip = host.querySelector(".fail-tooltip");
-    if(tip) tip.style.display = "none";
-  }
+    // Build stat blocks if grid exists
+    if(grid){
+      const keys = ["Speed","Stamina","Power","Guts","Wits"];
+      for(const k of keys){
+        const rawVal = (state.stats && typeof state.stats[k] !== 'undefined') ? state.stats[k] : 0;
+        const val = Number(rawVal) || 0;
+        const pct = Math.round(val / 12); // 1200 -> 100
+        const {rank, color} = statRankAndColor(val);
 
-  for(const k of ["Speed","Stamina","Power","Guts","Wits"]){
-    const val = state.stats[k] || 0;
-    const pct = Math.round(val / 12); // 1200 -> 100
-    const {rank, color} = statRankAndColor(val);
-    const d = document.createElement("div"); d.className = "stat";
-    d.innerHTML = `
-      <div class="statName" style="display:flex;justify-content:space-between">
-        <b class="statsName" style="color:${color}">&nbsp;${k}</b>
-        <span class="small muted" style="color:${color}"><span style="font-weight:bold;margin-left:7px;color:${color}">[${rank}]</span></span>
-      </div>
-      <div class="value">Value: <b>${val.toFixed(2)} / 1200</b></div>
-      <div class="bar"><i class="fill" style="width:${clamp(pct,0,100)}%"></i></div>
-      <div class="facilityLevel" style="margin-top:6px">Training Facility Level: ${state.training.levels[k]||1}</div>
-    `;
+        const d = document.createElement("div");
+        d.className = "stat";
+        d.style.position = "relative";
+        d.innerHTML = `
+          <div class="statName" style="display:flex;justify-content:space-between">
+            <b class="statsName" style="color:${color}">&nbsp;${k}</b>
+            <span class="small muted" style="color:${color}"><span style="font-weight:bold;margin-left:7px;color:${color}">[${rank}]</span></span>
+          </div>
+          <div class="value">Value: <b>${val.toFixed(2)} / 1200</b></div>
+          <div class="bar"><i class="fill" style="width:${clamp(pct,0,100)}%"></i></div>
+          <div class="facilityLevel" style="margin-top:6px">Training Facility Level: ${ (state.training.levels && state.training.levels[k]) ? state.training.levels[k] : 1 }</div>
+        `;
 
-    // ensure positioning context for tooltip
-    if(!d.style.position) d.style.position = "relative";
+        // remove existing listeners to avoid duplicates
+        if(d._failTipEnter) d.removeEventListener("mouseenter", d._failTipEnter);
+        if(d._failTipLeave) d.removeEventListener("mouseleave", d._failTipLeave);
 
-    // attach hover to the stat block (mouseenter/mouseleave)
-    d.addEventListener("mouseenter", e => showFailTooltipForHost(d, k));
-    d.addEventListener("mouseleave", e => hideFailTooltipForHost(d));
+        d._failTipEnter = function(){ showFailTooltipForHost(d, k); };
+        d._failTipLeave = function(){ hideFailTooltipForHost(d); };
 
-    grid.appendChild(d);
-  }
-  
-  // ALSO: attach hover tooltip behavior to training stat buttons (chips)
-  setTimeout(()=>{ // small timeout ensures trainingPanel exists & is rendered
-    try{
-      const chips = document.querySelectorAll("#trainingPanel .chip[data-stat]");
-      chips.forEach(ch => {
-        // ensure positioning context on the chip
-        if(!ch.style.position) ch.style.position = "relative";
-        // avoid duplicating listeners by removing earlier ones (safe)
-        ch.removeEventListener("mouseenter", ch._failTipEnter || (()=>{}));
-        ch.removeEventListener("mouseleave", ch._failTipLeave || (()=>{}));
+        d.addEventListener("mouseenter", d._failTipEnter);
+        d.addEventListener("mouseleave", d._failTipLeave);
 
-        const statName = ch.dataset.stat;
-        ch._failTipEnter = function(){ showFailTooltipForHost(ch, statName); };
-        ch._failTipLeave = function(){ hideFailTooltipForHost(ch); };
+        grid.appendChild(d);
+      }
+    }
 
-        ch.addEventListener("mouseenter", ch._failTipEnter);
-        ch.addEventListener("mouseleave", ch._failTipLeave);
+    // Attach hover tooltip behavior to training stat buttons (chips)
+    // small timeout remains to allow training panel to render; safe if not present
+    setTimeout(()=>{
+      try{
+        const chips = document.querySelectorAll("#trainingPanel .chip[data-stat]");
+        chips.forEach(ch => {
+          if(!ch) return;
+          if(!ch.style.position) ch.style.position = "relative";
+
+          // remove previous handlers if present
+          if(ch._failTipEnter) ch.removeEventListener("mouseenter", ch._failTipEnter);
+          if(ch._failTipLeave) ch.removeEventListener("mouseleave", ch._failTipLeave);
+
+          const statName = ch.dataset.stat;
+          ch._failTipEnter = function(){ showFailTooltipForHost(ch, statName); };
+          ch._failTipLeave = function(){ hideFailTooltipForHost(ch); };
+
+          ch.addEventListener("mouseenter", ch._failTipEnter);
+          ch.addEventListener("mouseleave", ch._failTipLeave);
+        });
+      }catch(e){ console.warn("chip tooltip attach error", e); }
+    }, 6);
+
+    // train button lock + style (guarded)
+    const doTrainBtn = getEl("doTrainBtn");
+    const trainLocked = !!(state.training && state.training.locked) && (state.racesDone <= (state.training.lockRaceCount || -1));
+    if(doTrainBtn) {
+      doTrainBtn.disabled = trainLocked;
+      doTrainBtn.style.padding ="6px 8px";
+      doTrainBtn.style.borderRadius="6px";
+      doTrainBtn.style.background="linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%)";
+      doTrainBtn.style.cursor="pointer";
+      doTrainBtn.style.border="1.6px solid white";
+      doTrainBtn.style.fontWeight="bold";
+    }
+
+    // training chips enable/disable
+    const chipsList = document.querySelectorAll("#trainingPanel .chip");
+    if(chipsList && chipsList.forEach){
+      chipsList.forEach(ch=>{
+        const stat = ch.dataset.stat;
+        const isMaxed = (Number(state.stats && state.stats[stat]) || 0) >= getEffectiveStatCapForPlayer(state);
+        if(trainLocked || isMaxed){
+          ch.classList.add("disabled");
+          ch.disabled = true;
+        } else {
+          ch.classList.remove("disabled");
+          ch.disabled = false;
+        }
       });
-    }catch(e){
-      console.warn("chip tooltip attach error", e);
     }
-  }, 6);
 
-  const trainLocked = !!(state.training && state.training.locked) && (state.racesDone <= (state.training.lockRaceCount || -1));
-  if(el("doTrainBtn")) el("doTrainBtn").disabled = trainLocked;
-  el("doTrainBtn").style.padding ="6px 8px";
-  el("doTrainBtn").style.borderRadius="6px";
-  el("doTrainBtn").style.background="linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%)";
-  el("doTrainBtn").style.cursor="pointer";
-  el("doTrainBtn").style.border="1.6px solid white";
-  el("doTrainBtn").style.fontWeight="bold";
+    // final render calls (safe if functions exist)
+    try{ if(typeof populateRaces === "function") populateRaces(); }catch(e){ console.warn("populateRaces error", e); }
+    try{ if(typeof renderAbilitiesShop === "function") renderAbilitiesShop(); }catch(e){ console.warn("renderAbilitiesShop error", e); }
+    try{ if(typeof renderEquipped === "function") renderEquipped(); }catch(e){ console.warn("renderEquipped error", e); }
+    try{ if(typeof renderLeaderboard === "function") renderLeaderboard(); }catch(e){ console.warn("renderLeaderboard error", e); }
 
-  document.querySelectorAll("#trainingPanel .chip").forEach(ch=>{
-    const stat = ch.dataset.stat;
-    const isMaxed = (state.stats[stat] || 0) >= getEffectiveStatCapForPlayer(state);
-    if(trainLocked || isMaxed){
-      ch.classList.add("disabled");
-      ch.disabled = true;
-    } else {
-      ch.classList.remove("disabled");
-      ch.disabled = false;
-    }
-  });
-
-  populateRaces();
-  renderAbilitiesShop();
-  renderEquipped();
-  renderLeaderboard();
+  } catch(err){
+    // Failsafe so UI doesn't crash the game if something unexpected happens
+    console.error("refreshPlayerUI fatal error:", err);
+  }
 }
 
 /* -------------------------
@@ -1351,35 +1514,87 @@ function renderAbilitiesShop(){
   wrap.style.background="#ffffff";
   wrap.style.border="1.7px solid #fcba03";
   wrap.style.borderRadius="8px";
+
+  // PASSIVES
   for(const p of ABILITIES.passives){
-    const unlocked = state.abilities.unlockedPassives.includes(p.id);
-    const isEquipped = state.abilities.equippedPassives.includes(p.id);
-    const row = document.createElement("div"); row.style.padding="6px"; row.style.background="#ffffff"; row.style.border = "1.7px solid #fcba03"; row.style.color ="#fcba03";
-    row.innerHTML = `<div style="display:flex;justify-content:space-between"><div><b>${p.id}</b><div class="identification">Passive</div></div>
-      <div style="text-align:right">${p.cost} SP<br>${unlocked? `<button class="smallBtn" data-equip="${p.id}">${isEquipped? 'Unequip' : 'Equip'}</button>` : `<button class="smallBtnBuy" data-buy="${p.id}">Buy</button>`}</div></div>`;
-    wrap.appendChild(row);
-  }
-  const hr = document.createElement("hr");
-  hr.style.height = "3px";
-  hr.style.width = "110%";
-  hr.style.background = "#fcba03";
-  wrap.appendChild(hr);
-  for(const a of ABILITIES.actives){
-    const unlocked = state.abilities.unlockedActives.includes(a.id);
-    const isEquipped = state.abilities.equippedActive === a.id;
-    const row = document.createElement("div"); row.style.padding="6px"; row.style.background="#ffffff"; row.style.border = "1.7px solid #fcba03"; row.style.color ="#fcba03";
-    row.innerHTML = `<div style="display:flex;justify-content:space-between"><div><b>${a.id}</b><div class="identification">Active</div></div>
-      <div style="text-align:right">${a.cost} SP<br>${unlocked? `<button class="smallBtn" data-equip-active="${a.id}">${isEquipped? 'Unequip' : 'Equip'}</button>` : `<button class="smallBtnBuy" data-buy-active="${a.id}">Buy</button>`}</div></div>`;
+    const unlocked = (state.abilities.unlockedPassives||[]).includes(p.id);
+    const isEquipped = (state.abilities.equippedPassives||[]).includes(p.id);
+    const row = document.createElement("div");
+    row.style.padding="6px"; row.style.background="#ffffff"; row.style.border = "1.7px solid #fcba03"; row.style.color ="#fcba03";
+    row.innerHTML = `<div style="display:flex;justify-content:space-between">
+      <div>
+        <b>${p.id}</b>
+        <div class="identification">Passive</div>
+        <div class="ability-desc">${p.desc || ''}</div>
+      </div>
+      <div style="text-align:right">
+        ${p.cost} SP<br>
+        ${unlocked? `<button class="smallBtn" data-equip="${p.id}">${isEquipped? 'Unequip' : 'Equip'}</button>` : `<button class="smallBtnBuy" data-buy="${p.id}">Buy</button>`}
+      </div>
+    </div>`;
     wrap.appendChild(row);
   }
 
-  // listeners
+  // separator
+  const hr = document.createElement("hr");
+  hr.style.height = "3px"; hr.style.width = "110%"; hr.style.background = "#fcba03";
+  wrap.appendChild(hr);
+
+  // ACTIVES
+  for(const a of ABILITIES.actives){
+    const unlocked = (state.abilities.unlockedActives||[]).includes(a.id);
+    const isEquipped = state.abilities.equippedActive === a.id;
+    const row = document.createElement("div");
+    row.style.padding="6px"; row.style.background="#ffffff"; row.style.border = "1.7px solid #fcba03"; row.style.color ="#fcba03";
+    row.innerHTML = `<div style="display:flex;justify-content:space-between">
+      <div>
+        <b>${a.id}</b>
+        <div class="identification">Active</div>
+        <div class="ability-desc">${a.desc || ''}</div>
+      </div>
+      <div style="text-align:right">
+        ${a.cost} SP<br>
+        ${unlocked? `<button class="smallBtn" data-equip-active="${a.id}">${isEquipped? 'Unequip' : 'Equip'}</button>` : `<button class="smallBtnBuy" data-buy-active="${a.id}">Buy</button>`}
+      </div>
+    </div>`;
+    wrap.appendChild(row);
+  }
+
+  // UNIQUE SKILLS group (gold outline)
+  if(ABILITIES.uniques && ABILITIES.uniques.length){
+    const sep2 = document.createElement("hr");
+    sep2.style.height = "3px"; sep2.style.width = "110%"; sep2.style.background = "#D4AF37";
+    wrap.appendChild(sep2);
+
+    for(const u of ABILITIES.uniques){
+      const unlocked = (state.abilities.unlockedUniques||[]).includes(u.id);
+      const isEquipped = state.abilities.equippedUnique === u.id;
+      const row = document.createElement("div");
+      row.className = unlocked ? "ability-unique" : "";
+      row.style.padding="6px"; row.style.background="#ffffff"; row.style.border = "1.7px solid #fcba03"; row.style.color ="#fcba03";
+      row.innerHTML = `<div style="display:flex;justify-content:space-between">
+        <div>
+          <b>${u.id}</b>
+          <div class="identification">Unique</div>
+          <div class="ability-desc">${u.desc || ''}</div>
+        </div>
+        <div style="text-align:right">
+          ${u.cost} SP<br>
+          ${unlocked? `<button class="smallBtn" data-equip-unique="${u.id}">${isEquipped? 'Unequip' : 'Equip'}</button>` : `<button class="smallBtnBuy" data-buy-unique="${u.id}">Buy</button>`}
+        </div>
+      </div>`;
+      wrap.appendChild(row);
+    }
+  }
+
+  // LISTENERS (passives / actives existing handlers)
   wrap.querySelectorAll("button[data-buy]").forEach(b=>b.addEventListener("click", ()=>{
     const id=b.dataset.buy; const item=ABILITIES.passives.find(x=>x.id===id);
     if(!item) return;
     if(state.sp < item.cost){ alert("Not enough SP"); return; }
     state.sp -= item.cost; state.abilities.unlockedPassives.push(id); saveState(); refreshPlayerUI();
   }));
+
   wrap.querySelectorAll("button[data-equip]").forEach(b=>b.addEventListener("click", ()=>{
     const id=b.dataset.equip;
     if(state.abilities.equippedPassives.includes(id)) state.abilities.equippedPassives = state.abilities.equippedPassives.filter(x=>x!==id);
@@ -1389,16 +1604,38 @@ function renderAbilitiesShop(){
     }
     saveState(); refreshPlayerUI();
   }));
+
   wrap.querySelectorAll("button[data-buy-active]").forEach(b=>b.addEventListener("click", ()=>{
     const id=b.dataset.buyActive; const item=ABILITIES.actives.find(x=>x.id===id);
     if(!item) return;
     if(state.sp < item.cost){ alert("Not enough SP"); return; }
     state.sp -= item.cost; state.abilities.unlockedActives.push(id); saveState(); refreshPlayerUI();
   }));
+
   wrap.querySelectorAll("button[data-equip-active]").forEach(b=>b.addEventListener("click", ()=>{
     const id=b.dataset.equipActive;
     if(state.abilities.equippedActive === id) state.abilities.equippedActive = null;
     else state.abilities.equippedActive = id;
+    saveState(); refreshPlayerUI();
+  }));
+
+  // UNIQUE listeners
+  wrap.querySelectorAll("button[data-buy-unique]").forEach(b=>b.addEventListener("click", ()=>{
+    const id=b.dataset.buyUnique; const item=(ABILITIES.uniques||[]).find(x=>x.id===id);
+    if(!item) return;
+    if(state.sp < item.cost){ alert("Not enough SP"); return; }
+    state.sp -= item.cost; state.abilities.unlockedUniques = state.abilities.unlockedUniques || [];
+    state.abilities.unlockedUniques.push(id); saveState(); refreshPlayerUI();
+  }));
+
+  wrap.querySelectorAll("button[data-equip-unique]").forEach(b=>b.addEventListener("click", ()=>{
+    const id=b.dataset.equipUnique;
+    if(state.abilities.equippedUnique === id){
+      state.abilities.equippedUnique = null;
+    } else {
+      // Unequip any other unique (only one allowed)
+      state.abilities.equippedUnique = id;
+    }
     saveState(); refreshPlayerUI();
   }));
 }
@@ -1409,7 +1646,18 @@ function renderAbilitiesShop(){
 function renderEquipped(){
   const pe = el("passivesEquip"); pe.innerHTML = "";
   for(const id of state.abilities.equippedPassives){
-    const d = document.createElement("div"); d.className = "ability"; d.textContent = id; pe.appendChild(d);
+    const d = document.createElement("div"); d.className = "ability"; d.textContent = id; pe.appendChild(d); d.style.textAlign = "center";
+  }
+  
+  const uqEl = el("uniqueEquip");
+  if(uqEl){
+	if(state.abilities && state.abilities.equippedUnique){
+      uqEl.textContent = state.abilities.equippedUnique;
+      uqEl.className = "uniqueSkill";
+	} else {
+      uqEl.textContent = '—';
+      uqEl.className = 'small muted';
+	}
   }
 
   const ae = el("activeEquip");
@@ -1417,6 +1665,8 @@ function renderEquipped(){
   if(state.abilities.equippedActive){
     const d = document.createElement("div");
     d.className = "activeAbility";
+	d.style.width = "190px";
+	d.style.textAlign = "center";
     d.textContent = state.abilities.equippedActive;
     ae.appendChild(d);
   } else {
@@ -1661,7 +1911,7 @@ function applyWeatherToRace(rs) {
     racer.weatherType = racer.weatherType || (
       DRY_RUNNERS.includes(racer.name) ? "dry" :
       WET_RUNNERS.includes(racer.name) ? "wet" :
-      VERSATILE_RUNNERS.includes(racer.name) ? "versatile" : null
+      VERSATILE_RUNNERS.includes(racer.name) ? "versatile" : "dry"
     );
 
     let trackSpeedMult = 1;
@@ -1751,6 +2001,69 @@ function applyWeatherToRace(rs) {
     tint.style.opacity = '0';
     try { video.pause(); } catch(e){}
     video.style.display = 'none';
+  }
+}
+
+function clearWeatherEffects(){
+  try{
+    // 1) Fade out & remove tint element if present
+    const tint = document.getElementById('uma-weather-tint');
+    if(tint){
+      try{ tint.style.opacity = '0'; }catch(e){}
+      // remove after transition (safe fallback)
+      setTimeout(()=>{
+        try{ if(tint.parentNode) tint.parentNode.removeChild(tint); }catch(e){}
+      }, 260);
+    }
+
+    // 2) Stop, unload, and remove the weather video element if present
+    const vid = document.getElementById('uma-weather-video');
+    if(vid){
+      try{ vid.pause(); }catch(e){}
+      try{ vid.removeAttribute('src'); }catch(e){}
+      // remove any <source> children
+      try{
+        while(vid.firstChild) vid.removeChild(vid.firstChild);
+      }catch(e){}
+      // reload to fully clear buffers (some browsers)
+      try{ if(typeof vid.load === 'function') vid.load(); }catch(e){}
+      // finally remove it from DOM
+      try{ if(vid.parentNode) vid.parentNode.removeChild(vid); }catch(e){}
+    }
+
+    // 3) Remove any body classes that start with "weather-" (defensive)
+    try{
+      const body = document.body;
+      if(body && body.classList && body.classList.length){
+        const toRemove = [];
+        body.classList.forEach(c=>{
+          if(typeof c === 'string' && c.indexOf('weather-') === 0) toRemove.push(c);
+        });
+        toRemove.forEach(c=> body.classList.remove(c));
+      }
+    }catch(e){}
+
+    // 4) Defensive style cleanup for common containers that might have tints applied inline
+    ['#game', '.battlefield', '#raceContainer', '.race-area', 'main'].forEach(sel=>{
+      try{
+        const el = document.querySelector(sel);
+        if(el && el.style){
+          el.style.backgroundBlendMode = '';
+          el.style.backgroundImage = '';
+          el.style.filter = '';
+          el.style.transition = '';
+        }
+      }catch(e){}
+    });
+
+    // 5) clear any lightweight global handles (defensive)
+    try{ if(window._weatherInterval){ clearInterval(window._weatherInterval); window._weatherInterval = null; } }catch(e){}
+    try{ if(window._weatherTimeout){ clearTimeout(window._weatherTimeout); window._weatherTimeout = null; } }catch(e){}
+
+    // 6) clear raceState weather flag so later logic doesn't think weather still applies
+    try{ if(raceState) raceState.weather = null; }catch(e){}
+  }catch(err){
+    console.warn("clearWeatherEffects error:", err);
   }
 }
 
@@ -1940,30 +2253,66 @@ function evaluatePassivesEachTick(){
   if(!raceState) return;
   const player = raceState.field.find(f=>f.isPlayer);
   if(!player) return;
-  for(const pid of state.abilities.equippedPassives){
+
+  for(const pid of state.abilities.equippedPassives || []){
     const def = ABILITIES.passives.find(x=>x.id === pid);
     if(!def) continue;
     try{
-      const cond = def.condition(raceState, player);
+      const cond = (typeof def.condition === 'function') ? def.condition(raceState, player) : false;
       if(cond){
         def.apply(player, raceState);
-        // mark applied - def implementations set _mods
       } else {
-        def.remove(player, raceState);
+        if(typeof def.remove === 'function') def.remove(player, raceState);
       }
     }catch(e){ console.warn("ability error", e); }
   }
-  // cleanup timed modifiers
-  if(player._mods){
-    for(const k in player._mods){
-      if(player._mods[k] && player._mods[k].expires && raceState.time >= player._mods[k].expires){
-        const nameMap = {Aura:"Aura", Competitive:"Competitive", /* etc */};
-        if(k === "Competitive" || k === "Aura"){
-          const def = ABILITIES.passives.find(x=>x.id === (k==="Competitive" ? "Competitive" : "Aura"));
-          if(def) def.remove(player, raceState);
+
+  const uqId = state.abilities.equippedUnique;
+  if(uqId){
+    const udef = (ABILITIES.uniques || []).find(x=>x.id === uqId);
+    if(udef){
+      try{
+        const ucond = (typeof udef.condition === 'function') ? udef.condition(raceState, player) : true;
+        if(ucond){
+          udef.apply(player, raceState);
+        } else {
+          if(typeof udef.remove === 'function') udef.remove(player, raceState);
+        }
+      }catch(e){ console.warn("unique ability error", e); }
+    }
+  } else {
+    try {
+      const uniqKeys = ['EndCloser','LateSurger','PaceChaser','FrontRunner'];
+      if(player._mods){
+        for(const k of uniqKeys){
+          if(player._mods[k] && typeof player._mods[k] !== 'function'){
+            const def = (ABILITIES.uniques || []).find(x=>x.id && x.id.replace(/\s+/g,'') === k.replace(/\s+/g,''));
+          }
         }
       }
-    }
+    } catch(e){}
+  }
+
+  for (const k in player._mods) {
+	const mod = player._mods[k];
+	if (mod && mod.expires && raceState.time >= mod.expires) {
+      const nameMap = {
+		Aura:"Aura", Competitive:"Competitive", Rushed:"Rushed", LateStart:"LateStart",
+		LowEnergyAcc:"LowEnergyAcc", SpecialActivated:"SpecialActivated", SpecialActivatedOnce:"SpecialActivatedOnce",
+		Further:"Further", Gotcha:"Gotcha", CopySpeed:"CopySpeed", CloudyDays:"CloudyDays",
+		RainyDays:"RainyDays", FirmConditions:"FirmConditions", RainyDaysActive:"RainyDaysActive",
+		CloudyDaysActive:"CloudyDaysActive", _prev:"_prev", EndCloser:"EndCloser",
+		LateSurger:"LateSurger", PaceChaser:"PaceChaser", FrontRunner:"FrontRunner"
+      };
+	  const id = nameMap[k] || k;
+
+      const def = (ABILITIES.passives.find(x => x.id === id) || (ABILITIES.uniques && ABILITIES.uniques.find(x => x.id === id)));
+      if (def && def.remove) def.remove(player, raceState);
+
+      if (mod.onExpire) mod.onExpire(player, raceState);
+
+      delete player._mods[k];
+	}
   }
 }
 
@@ -1981,17 +2330,19 @@ function startRace(){
   if(!raceState) { alert("No race prepared."); return; }
   if(raceState.running) return;
 
-  // Constants for new features
-  const LOW_ENERGY_THRESHOLD = 30;
-  const LATE_START_CHANCE = (function(){ const base=0.05; const scale=_getWitsScale(); return base * (1 - scale); })();
-  const LATE_START_DELAY = 0.5;
-
   raceState.running = true; raceState.time = 0; raceState.finishedCount = 0; raceState.nextFinishPlace = 1;
   // reset crew 25
   for(const r of raceState.field){
     r.speed = 0; r.pos = 0; r.stamina = r.staminaMax; r.finished = false; r.finalPlace = null;
     r.exhausted = false; r.reachedMiddle = false; r._mods = {}; r.activeBuffs = []; r.startRank = r.startRank || 1;
   }
+  
+  // Constants for new features
+  const LOW_ENERGY_THRESHOLD = 30;
+  const LATE_START_CHANCE = (function(){ const base=0.05; const scale=_getWitsScale(); return base * (1 - scale); })();
+  const LATESTARTCHANCE = applyAbilityChanceModifiers(LATE_START_CHANCE, raceState);
+  const LATE_START_DELAY = 0.5;
+  const LATESTARTDELAY = computeLateStartDelayWithModifiers(LATE_START_DELAY, raceState)
   
   state.playerAbilityLastUsed = state.playerAbilityLastUsed || 0;
   state.playerAbilityLastUsedRace = null;
@@ -2004,7 +2355,7 @@ function startRace(){
   // Note: raceState.time is 0 here (race just started), so startsAt = 0.5
   for(const r of raceState.field){
     // 5% Late Start chance for every racer
-    if(Math.random() < LATE_START_CHANCE){
+    if(Math.random() < LATESTARTCHANCE){
       // mark with a LateStart mod; we'll check this in raceTick to block acceleration until startsAt
       r._mods = r._mods || {};
       r._mods.LateStart = { startsAt: raceState.time + LATE_START_DELAY };
@@ -2046,6 +2397,7 @@ function raceTick(dt){
   // constants for new features
   const BASE_DRAIN_PER_TICK = 0.1;
   const PLAYER_RUSH_CHANCE = (function(){ const base = 0.0001; const scale = _getWitsScale(); return base * (1 - scale); })();
+  const RUSH_CHANCE = applyAbilityChanceModifiers(PLAYER_RUSH_CHANCE, raceState);
   const RUSH_MS_MULT = 0.08;
   const RUSH_DURATION = 5;
 
@@ -2077,7 +2429,7 @@ function raceTick(dt){
     }
 
     if(!r.finished && (r.isPlayer || r.canBeRushed) && !(r._mods && r._mods.Rushed)){
-      if(Math.random() < PLAYER_RUSH_CHANCE){
+      if(Math.random() < RUSH_CHANCE){
         r._mods = r._mods || {};
         const ms = r.maxSpeed * RUSH_MS_MULT;
         r._mods.Rushed = { ms: ms, dmult: 4, expires: raceState.time + RUSH_DURATION };
@@ -2102,13 +2454,19 @@ function raceTick(dt){
     }
 
     // stamina drain/regain
-    if(r.speed >= curMax * 0.98){
-      let mult = 1;
-      if(r._mods && r._mods.Rushed && r._mods.Rushed.dmult) mult *= r._mods.Rushed.dmult;
-      r.stamina -= (BASE_DRAIN_PER_TICK * mult);
-    } else {
-      r.stamina += (r.regenPerTick || r.regenPerTick || 0.1);
-    }
+    if(r.speed >= curMax){
+	  let mult = 1;
+	  if(r._mods){
+		for(const mk in r._mods){
+		try {
+          if(r._mods[mk] && typeof r._mods[mk].dmult === 'number') mult *= r._mods[mk].dmult;
+		} catch(e){}
+      }
+	}
+	r.stamina -= (BASE_DRAIN_PER_TICK * mult);
+	} else {
+	  r.stamina += (r.regenPerTick || 0.1);
+	}
     r.stamina = clamp(r.stamina, 0, r.staminaMax);
 
     // exhaustion handling
@@ -2208,8 +2566,111 @@ function raceCommentaryTick(){
   addCommentary(msg);
 }
 
+function clearAllAbilityEffects(){
+  try{
+    if(!raceState) {
+      // still clear player trackers if possible
+      if(state){
+        state.playerAbilityLastUsed = null;
+        state.playerAbilityLastUsedRace = null;
+        saveState();
+        try{ refreshPlayerUI(); }catch(e){}
+      }
+      return;
+    }
+
+    // 1) Ensure equipped passive removals are run for player
+    try{
+      const player = (raceState.field||[]).find(f=>f.isPlayer);
+      if(player && state && state.abilities && Array.isArray(state.abilities.equippedPassives)){
+        for(const pid of state.abilities.equippedPassives){
+          try{
+            const def = ABILITIES.passives.find(x=>x.id === pid);
+            if(def && typeof def.remove === 'function') def.remove(player, raceState);
+          }catch(e){ /* ignore per-passive errors */ }
+        }
+      }
+    }catch(e){ /* ignore */ }
+
+    // 2) Walk every racer and undo any _mods present
+    (raceState.field || []).forEach(r => {
+      if(!r || !r._mods) return;
+      for(const k of Object.keys(r._mods)){
+        const mod = r._mods[k];
+        if(!mod) continue;
+        try{
+          // clear interval/timeout handles created by mods
+          if(mod.intervalId) {
+            try{ clearInterval(mod.intervalId); }catch(e){}
+          }
+          if(mod.timeoutId) {
+            try{ clearTimeout(mod.timeoutId); }catch(e){}
+          }
+
+          // conservative reversal of common additive effects
+          if(typeof mod.ms === 'number' && typeof r.maxSpeed === 'number'){
+            r.maxSpeed = Math.max(0, (r.maxSpeed || 0) - mod.ms);
+          }
+          if(typeof mod.ac === 'number' && typeof r.acc === 'number'){
+            r.acc = Math.max(0, (r.acc || 0) - mod.ac);
+          }
+          if(typeof mod.regen === 'number' && typeof r.regenPerTick === 'number'){
+            r.regenPerTick = Math.max(0, (r.regenPerTick || 0) - mod.regen);
+          }
+          if(typeof mod.regenPerTick === 'number' && typeof r.regenPerTick === 'number'){
+            r.regenPerTick = Math.max(0, (r.regenPerTick || 0) - mod.regenPerTick);
+          }
+
+          // if a mod stored prev values, prefer restoring them after cleaning
+        }catch(e){ /* ignore individual mod errors */ }
+      }
+
+      // restore an explicit _prev snapshot if present (this resets core values)
+      try{
+        if(r._mods && r._mods._prev){
+          const prev = r._mods._prev;
+          if(typeof prev.maxSpeed !== 'undefined') r.maxSpeed = prev.maxSpeed;
+          if(typeof prev.acc !== 'undefined') r.acc = prev.acc;
+          if(typeof prev.regenPerTick !== 'undefined') r.regenPerTick = prev.regenPerTick;
+        }
+      }catch(e){}
+
+      // final cleanup
+      try{
+        r._mods = {};
+        r.activeBuffs = [];
+        r.lastAbilityUsed = 0;
+      }catch(e){}
+    });
+
+    // 3) Reset player active usage trackers (so next race is fresh)
+    try{
+      if(state){
+        state.playerAbilityLastUsed = null;
+        state.playerAbilityLastUsedRace = null;
+      }
+    }catch(e){}
+	
+	try{
+	  const uId = (state && state.abilities && state.abilities.equippedUnique) ? state.abilities.equippedUnique : null;
+	  if(uId && player){
+		const udef = (ABILITIES.uniques || []).find(x=>x.id === uId);
+		if(udef && typeof udef.remove === 'function') udef.remove(player, raceState);
+	  }
+	}catch(e){ /* ignore */ }
+
+    // persist UI/state
+    try{ saveState(); }catch(e){}
+    try{ refreshPlayerUI(); }catch(e){}
+  }catch(err){
+    console.warn("clearAllAbilityEffects failed:", err);
+  }
+}
+//ability thingy
+const abBtn = _getAbilityButtonForId();
+
 function endRace(){
-  // stop timers
+  try{ clearAllAbilityEffects(); } catch(e){ console.warn("clearAllAbilityEffects failed at race finish", e); }
   if(raceTickHandle){ clearInterval(raceTickHandle); raceTickHandle = null; }
   if(commentaryHandle){ clearInterval(commentaryHandle); commentaryHandle = null; }
   if(!raceState) return;
@@ -2232,6 +2693,7 @@ function endRace(){
   const baseFame = raceState.race ? (raceState.race.rewardFame || 0) : 0;
   const baseSP = 50;
   const statGains = [];
+  let spGain = 0;
 
   // count this race as done
   state.racesDone = (state.racesDone || 0) + 1;
@@ -2249,7 +2711,7 @@ function endRace(){
 
   if(place === 1){
     state.fame = (state.fame || 0) + baseFame;
-	state.sp = (state.sp||0) + baseSP;
+	spGain = (state.sp||0) + baseSP;
     const picked = [];
     for(let i=0;i<5;i++){
       const statKey = pickStatForGain(picked);
@@ -2264,13 +2726,13 @@ function endRace(){
     if (Array.isArray(statGains) && statGains.length>0) {
       gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     }
-    state.sp = (state.sp||0) + 50;
+    state.sp += spGain;
     state.wins = (state.wins||0) + 1;
-    addLog(`<b class="ok">Congratulations! ${player.name} won 1st place!<br>Earned ${state.fame} Fame<br>Earned ${state.sp} SP<br>${gainsHtml}</b>`);
+    addLog(`<b class="ok">Congratulations! ${player.name} won 1st place!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}</b>`);
   } else if(place === 2){
     state.fame = (state.fame || 0) + Math.round(baseFame * 0.75);
 	state.losses = (state.losses||0) + 1;
-    state.sp = (state.sp||0) + (baseSP * 0.5);
+    spGain = (state.sp||0) + (baseSP * 0.5);
     const picked = [];
     for(let i=0;i<4;i++){
       const statKey = pickStatForGain(picked);
@@ -2285,12 +2747,12 @@ function endRace(){
     if (Array.isArray(statGains) && statGains.length>0) {
       gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     }
-    state.sp = (state.sp||0) + 25;
-    addLog(`<b class="ok">${player.name} finished 2nd place! Nice!<br>Earned ${state.fame} Fame<br>Earned ${state.sp} SP<br>${gainsHtml}</b>`);
+	state.sp += spGain;
+    addLog(`<b class="ok">${player.name} finished 2nd place! Nice!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}</b>`);
   } else if(place === 3){
     state.fame = (state.fame || 0) + Math.round(baseFame * 0.5);
 	state.losses = (state.losses||0) + 1;
-    state.sp = (state.sp||0) + (baseSP * 0.2);
+    spGain = (state.sp||0) + (baseSP * 0.2);
     const picked = [];
     for(let i=0;i<3;i++){
       const statKey = pickStatForGain(picked);
@@ -2305,11 +2767,11 @@ function endRace(){
     if (Array.isArray(statGains) && statGains.length>0) {
       gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     }
-    state.sp = (state.sp||0) + 10;
-    addLog(`<b class="ok">${player.name} won 3rd place! Good job!<br>Earned ${state.fame} Fame<br>Earned ${state.sp} SP<br>${gainsHtml}<br></b>`);
+	state.sp += spGain;
+    addLog(`<b class="ok">${player.name} won 3rd place! Good job!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}<br></b>`);
   } else if(typeof place === 'number' && place > 3 && place <= 8) {
     state.losses = (state.losses||0) + 1;
-	state.sp = (state.sp||0) + (baseSP * 0.2);
+	spGain = (state.sp||0) + (baseSP * 0.2);
     const picked = [];
     for(let i=0;i<2;i++){
       const statKey = pickStatForGain(picked);
@@ -2324,10 +2786,11 @@ function endRace(){
     if (Array.isArray(statGains) && statGains.length>0) {
       gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     }
-    addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Earned ${state.sp} SP<br>${gainsHtml}</span>`);
+	state.sp += spGain;
+    addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Earned ${spGain} SP<br>${gainsHtml}</span>`);
   } else if (typeof place === 'number' && place > 8 && place <= 12) {
 	state.fame = (state.fame || 0) - 50;
-	state.sp = (state.sp||0) + (baseSP * 0.1);
+	spGain = (state.sp||0) + (baseSP * 0.1);
 	state.losses = (state.losses||0) + 1;
     const picked = [];
     for(let i=0;i<2;i++){
@@ -2343,13 +2806,15 @@ function endRace(){
     if (Array.isArray(statGains) && statGains.length>0) {
       gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     }
-    addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Lost 50 Fame<br>Earned ${state.sp} SP<br>${gainsHtml}</span>`);
+	state.sp += spGain;
+    addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Lost 50 Fame<br>Earned ${spGain} SP<br>${gainsHtml}</span>`);
   } else {
     if(typeof place === 'number'){
       state.fame = (state.fame || 0) - 100;
-	  state.sp = (state.sp||0) + (baseSP * 0.1);
+	  spGain = (state.sp||0) + (baseSP * 0.1);
       state.losses = (state.losses||0) + 1;
-      addLog(`<span class="warn">${player.name} finished ${place}th place. Better luck next time...<br>Lost 100 Fame<br>Earned ${state.sp} SP</span>`);
+	  state.sp += spGain;
+      addLog(`<span class="warn">${player.name} finished ${place}th place. Better luck next time...<br>Lost 100 Fame<br>Earned ${spGain} SP</span>`);
     } else {
       addLog(`<span class="warn">Race ended but finish place not found for the player.</span>`);
     }
@@ -2417,9 +2882,9 @@ function endRace(){
 
   saveState();
   refreshPlayerUI();
-  
+  try{ clearWeatherEffects(); }catch(e){}
   try{ AudioManager.stopRaceAndResumeTitle(); }catch(e){ console.warn("AudioManager resume failed", e); }
-
+  abBtn.dataset.disabled = false;
   // show Enter Race again
   if(el("enterRaceBtn")) el("enterRaceBtn").style.display = "";
 }
@@ -2463,36 +2928,117 @@ function canEnterRace(race){
 /* -------------------------
   Abilities: Active usage
 ------------------------- */
+function _getAbilityButtonForId(id){
+  // Prefer explicit data attribute
+  let sel = document.querySelector(`[data-ability-id="${id}"]`);
+  if(sel) return sel;
+  // common fallback id convention: ability-btn-<id>
+  sel = document.getElementById(`ability-btn-${id}`);
+  if(sel) return sel;
+  // fallback: first .ability-btn that matches equipped active button (non-ideal)
+  sel = document.querySelector(`.ability-btn`);
+  return sel;
+}
+
+function setAbilityButtonDisabled(id, disabled){
+  const btn = _getAbilityButtonForId(id);
+  if(!btn) return;
+  if(disabled){
+    btn.classList.add('disabled');
+    btn.setAttribute('aria-disabled','true');
+    btn.dataset.disabled = '1';
+    btn.style.pointerEvents = 'auto';
+  } else {
+    btn.classList.remove('disabled');
+    btn.removeAttribute('aria-disabled');
+    delete btn.dataset.disabled;
+    btn.style.pointerEvents = '';
+  }
+}
+
 function useActiveById(id){
   if(!raceState || !raceState.running){ addLog("Active ability can only be used during a race."); return; }
+
   const a = ABILITIES.actives.find(x=>x.id===id);
   const nowTs = Date.now()/1000;
   const curRaceName = raceState && raceState.race && raceState.race.name;
   const inMongolDerby = curRaceName === "Mongol Derby";
 
-  if(!inMongolDerby){
-	if(state.playerAbilityLastUsedRace && state.playerAbilityLastUsedRace === curRaceName){
-		addLog(`<span class="warn">You're too exhausted to do that again...</span>`);
+  // If button already visually marked disabled, show the correct message and return
+  if(abBtn && abBtn.dataset && abBtn.dataset.disabled){
+    // If Mongol Derby, show remaining cooldown if any; otherwise show exhausted
+    if(inMongolDerby){
+      const last = state.playerAbilityLastUsed || 0;
+      const elapsed = nowTs - last;
+      const remain = Math.max(0, Math.ceil(60 - elapsed));
+      addLog(`<span class="warn">Ability on Cooldown: ${remain}s left.</span>`);
+    } else {
+      addLog(`<span class="warn">You're too exhausted to do that again.</span>`);
+    }
     return;
-	}
-  } else {
-  if(state.playerAbilityLastUsed && (nowTs - state.playerAbilityLastUsed) < 60){
-    const remain = Math.ceil(60 - (nowTs - state.playerAbilityLastUsed));
-	  addLog(`<span class="warn">Ability on Cooldown: ${remain}s left.</span>`);
-	return;
   }
-}
 
-state.playerAbilityLastUsed = Date.now()/1000;
-state.playerAbilityLastUsedRace = curRaceName;
-saveState();
+  // Immediately mark button visually disabled so other near-simultaneous inputs hit the early-return above.
+  // (We will re-enable it later depending on race/type).
+  setAbilityButtonDisabled(id, true);
 
-  if(!a) return;
-  if(state.sp < a.cost){ addLog("Not enough SP"); return; }
-  state.sp -= a.cost;
-  const player = raceState.field.find(f=>f.isPlayer);
+  // Now run the usual cooldown/race checks (defensive)
+  if(!inMongolDerby){
+    if(state.playerAbilityLastUsedRace && state.playerAbilityLastUsedRace === curRaceName){
+      addLog(`<span class="warn">You're too exhausted to do that again.</span>`);
+      // button stays disabled for the race (that's desired behavior)
+      return;
+    }
+  } else {
+    if(state.playerAbilityLastUsed && (nowTs - state.playerAbilityLastUsed) < 60){
+      const remain = Math.ceil(60 - (nowTs - state.playerAbilityLastUsed));
+      addLog(`<span class="warn">Ability on Cooldown: ${remain}s left.</span>`);
+      return;
+    }
+  }
+
+  // Mark usage immediately (prevents races between near-simultaneous calls)
+  state.playerAbilityLastUsed = nowTs;
+  state.playerAbilityLastUsedRace = curRaceName;
+  try{ saveState(); }catch(e){}
+
+  if(!a){ addLog("No such active."); return; }
+  if(state.sp < 2){ addLog(`<span class="warn">Not enough SP</span>`); return; }
+
+  // consume cost
+  state.sp -= 2;
+
+  const player = (raceState.field||[]).find(f=>f.isPlayer);
+  if(!player){ addLog("No player found."); return; }
+  player._mods = player._mods || {};
+
+  // Unique mod slot per active id (guarantees idempotence)
+  const modKey = "__active_" + id;
+
+  // revert helper
+  function revertModForPlayer(p, key){
+    if(!p || !p._mods || !p._mods[key]) return;
+    const mod = p._mods[key];
+    try{ if(mod.timeoutId) clearTimeout(mod.timeoutId); }catch(e){}
+    try{ if(mod.intervalId) clearInterval(mod.intervalId); }catch(e){}
+    try{
+      if(typeof mod.ms === 'number' && typeof p.maxSpeed === 'number'){ p.maxSpeed = Math.max(0, (p.maxSpeed||0) - mod.ms); }
+      if(typeof mod.ac === 'number' && typeof p.acc === 'number'){ p.acc = Math.max(0, (p.acc||0) - mod.ac); }
+    }catch(e){ console.warn("revertMod error", e); }
+    try{ delete p._mods[key]; }catch(e){}
+  }
+
+  if(player._mods[modKey]){
+    if(!inMongolDerby){
+      addLog(`<span class="warn">You're too exhausted to do that again.</span>`);
+      return;
+    } else {
+      revertModForPlayer(player, modKey);
+    }
+  }
+
   if(!player) return;
-  // Implement each active's primary effect
+  
   if(a.fn === "plusUltra"){
     const ms = player.maxSpeed * 0.10; const ac = player.acc * 0.10;
     player._mods.PlusUltra = {ms,ac,expires: raceState.time + 9};
@@ -2541,18 +3087,17 @@ saveState();
     addLog(`<span id="ok">Triumphant Pulse Activated!.</span>`);
   } else if(a.fn === "redshift"){
       const ms = player.maxSpeed * 0.20;
-      player._mods.redshift = { ms, expires: rs.time + 5 };
+      player._mods.redshift = { ms, expires: raceState.time + 5 };
 	  try{ _applyWitsScalingToMod(r._mods.redshift); }catch(e){}
       player.maxSpeed += ms;
-      addLog(`<div class="warn">Red Shift Activated!</div>`);
+      addLog(`<div class="ok">Red Shift Activated!</div>`);
 	  const delayMs = Math.max(0, Math.round((player._mods.redshift.expires - raceState.time) * 1000));
       setTimeout(()=>{ if(player._mods && player._mods.redshift){ player.maxSpeed -= player._mods.redshift.ms; delete player._mods.redshift; } }, 5000);
-    addLog(`<span id="ok">Red Shift Activated!.</span>`);
   } else if(a.fn === "swing"){
       if(!player.reachedMiddle) return;
       const ms = player.maxSpeed * 0.12;
       const ac = player.acc * 0.12;
-      player._mods.swing = { ms, ac, expires: rs.time + 9 };
+      player._mods.swing = { ms, ac, expires: raceState.time + 9 };
 	  try{ _applyWitsScalingToMod(r._mods.swing); }catch(e){}
       player.maxSpeed += ms; player.acc += ac;
       addLog(`<div class="ok">Swinging Maestro Activated!</div>`);
@@ -2570,7 +3115,7 @@ saveState();
 	  const delayMs = Math.max(0, Math.round((player._mods.Further.expires - raceState.time) * 1000));
       setTimeout(()=>{ if(player._mods && player._mods.Further){ player.maxSpeed -= player._mods.Further.ms; player.acc -= player._mods.Further.ac; delete player._mods.Further; } }, 4000);
       addLog(`<span id="ok">Must Go Even Further Beyond! Activated.</span>`);
-    } else addLog(`<span id="ok">Must Go Even Further Beyond! Activated.</span>`);
+    } else addLog(`<span id="ok">Must Go Even Further Beyond! But nothing happened...</span>`);
   } else if(a.fn === "gotcha"){
     const rank = getCurrentRank(raceState, player);
     if(rank === 2 || rank === 3){
@@ -2581,9 +3126,20 @@ saveState();
 	  const delayMs = Math.max(0, Math.round((player._mods.Gotcha.expires - raceState.time) * 1000));
       setTimeout(()=>{ if(player._mods && player._mods.Gotcha){ player.maxSpeed -= player._mods.Gotcha.ms; player.acc -= player._mods.Gotcha.ac; delete player._mods.Gotcha; } }, 9000);
       addLog(`<span id="ok">Gotcha! Activated.</span>`);
-    } else addLog(`<span id="ok">Gotcha! Activated.</span>`);
+    } else addLog(`<span id="ok">Gotcha! But nothing happened...</span>`);
   }
-  saveState(); refreshPlayerUI();
+  
+  try{ saveState(); }catch(e){}
+  try{ refreshPlayerUI(); }catch(e){}
+  
+  raceState.playerAbilityInProgress = false;
+  return true;
+  
+  if(inMongolDerby){
+    setTimeout(()=>{
+      setAbilityButtonDisabled(id, false);
+    }, 60000);
+  }
 }
 
 /* -------------------------
@@ -2609,6 +3165,8 @@ function retireNow(){
 }
 
 function resetAllProgress(){
+  try{ clearAllAbilityEffects(); }catch(e){}
+  try{ clearWeatherEffects(); }catch(e){}
   if(!confirm("Reset ALL progress and leaderboard? This cannot be undone.")) return;
   localStorage.removeItem("uma_state_v1"); localStorage.removeItem("uma_leaderboard_v1");
   state = JSON.parse(JSON.stringify(DEFAULT_PLAYER));
@@ -2678,8 +3236,44 @@ document.addEventListener("DOMContentLoaded", ()=>{
   populateRaces();
   el("enterRaceBtn").addEventListener("click", ()=>{ const r = el("raceSelect").value; if(!r) return; prepareRace(r); });
   el("startRaceBtn").addEventListener("click", ()=> startRace());
-  el("stopRaceBtn").addEventListener("click", ()=> { if(raceTickHandle){ clearInterval(raceTickHandle); raceTickHandle=null;} if(commentaryHandle){clearInterval(commentaryHandle);commentaryHandle=null;} if(raceState) raceState.running=false; addLog("Race stopped."); el("enterRaceBtn").style.display = ""; });
-  el("resetRaceBtn").onclick = resetRace;
+  el("stopRaceBtn").addEventListener("click", ()=> stopRace());
+  
+  function stopRace() {
+	if(!raceState || !raceState.running) return;
+	try{ clearAllAbilityEffects(); }catch(e){}
+	try{ clearWeatherEffects(); }catch(e){}
+	try{ AudioManager.stopRaceAndResumeTitle(); }catch(e){ console.warn("AudioManager resume failed", e); }
+	
+	if(raceTickHandle) {
+	  clearInterval(raceTickHandle);
+	  raceTickHandle=null;
+	}
+  
+	if(commentaryHandle) {
+	  clearInterval(commentaryHandle);
+	  commentaryHandle=null;
+	}
+  
+	if(raceState) raceState.running=false;
+	addLog(`<span class='warn'>Race forced to stop. All participating umamusume will not be rewarded nor penalized.`);
+  
+	el("enterRaceBtn").style.display = ""; 
+  
+	clearInterval(raceState.interval);
+	raceState.interval = null;
+	raceState.finished = false;
+	raceState.tick = 0;
+  
+	for (const r of raceState.field){
+	  r.progress = 0;
+	  r.finished = false;
+	  r.stamina = r.staminaMax;
+	}
+  
+	state.losses = (state.losses||0) + 1;
+	saveState();
+	refreshPlayerUI();
+  }
 
   // retire & reset all
   el("retireBtn").addEventListener("click", ()=> retireNow());
@@ -2697,22 +3291,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // autosave
   setInterval(()=>{ saveState(); }, 10000);
 });
-
-function resetRace(){
-  if (!raceState) return;
-  clearInterval(raceState.interval);
-  raceState.interval = null;
-  raceState.running = false;
-  raceState.finished = false;
-  raceState.tick = 0;
-  for (const r of raceState.field){
-    r.progress = 0;
-    r.finished = false;
-    r.stamina = r.staminaMax;
-  }
-  state.losses = (state.losses||0) + 1;
-  updateRaceUI();
-}
 
 /* -------------------------
   load & default final
@@ -2889,7 +3467,7 @@ const AudioManager = (function(){
 		  } else if (r > 0.60) {
 			chosen = 'meni.mp4';
 		    fadeMs = 144000;
-		    playBtnMs = 1330;
+		    playBtnMs = 1390;
 		  } else if (r > 0.40) {
 			chosen = 'makedebut.mp4';
 		    fadeMs = 142500;
@@ -3115,12 +3693,9 @@ html, body, * , *::before, *::after {
     document.addEventListener('touchmove', onPointerMove, { passive: true });
   }
 
-  // optional: hide the custom cursor on mobile small screens (touch-only)
   function detectTouchOnlyAndHideCursor() {
-    // if device has no fine pointer, hide the custom cursor (touch UX)
     const mq = window.matchMedia('(pointer: coarse) and (hover: none)');
     if (mq.matches) {
-      // hide native cursor is already set, but hide custom cursor element
       cursorEl.style.display = 'none';
     } else {
       cursorEl.style.display = '';

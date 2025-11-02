@@ -31,12 +31,25 @@
   .title-badge--star { color: linear-gradient(180deg,#ffb347 0%, #ff7014 100%); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.35); border:1px solid rgba(0,0,0,0.08); font-weight:500; }
   .title-badge--legend { color: linear-gradient(180deg,#a64ca6 0%, #5f0a87 100%); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.35); border:1px solid rgba(0,0,0,0.08); font-weight:500; }
   .chip{padding:6px 8px;border-radius:6px;background:linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%);cursor:url('cursor.png'), pointer;border: 1.6px solid white;font-weight: bold;}
-  .ability{padding:6px 8px;border-radius:6px;background:linear-gradient(90deg,#00fbff 0%,#00a2ff 100%);cursor:url('cursor.png'), pointer;border: 1.6px solid white;font-weight: bold;}
-  .activeAbility{padding:6px 8px;border-radius:6px;background:linear-gradient(135deg,#eeff00 0%,#ffa600 100%);cursor:url('cursor.png'), pointer;border: 1.9px solid white;font-weight: bold;}
   .chip.active{background: linear-gradient(180deg,#ffd54f 0%, #c69000 100%);border: 2px solid white;color: #fff;font-weight: bold;}
-  button:hover, .chip:hover, .small-btn:hover, .smallBtn:hover, button.chip:hover {background: linear-gradient(180deg,#00fbff 0%,#00a2ff 100%) !important;border: 1.6px solid white !important;color: #fff !important;cursor:url('cursor.png'), pointer;}
+  #raceSelect:hover, #enterRaceBtn:hover, #startRaceBtn:hover, #stopRaceBtn:hover, #doTrainBtn:hover, .smallBtnBuy:hover, .ability-btn:hover, .chip:hover, .small-btn:hover, .smallBtn:hover, button.chip:hover {background: linear-gradient(180deg,#00fbff 0%,#00a2ff 100%) !important;border: 1.6px solid white !important;color: #fff !important;cursor:url('cursor.png'), pointer;}
   restBtn.small-btn{padding:6px 8px;border-radius:6px;background:linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%);cursor:pointer;border: 1.6px solid white;font-weight: bold;}
   manualSaveBtn.small-btn{padding:6px 8px;border-radius:6px;background:linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%);cursor:pointer;border: 1.6px solid white;font-weight: bold;}
+  .ability{padding:6px 8px;border-radius:6px;background:linear-gradient(90deg,#00fbff 0%,#00a2ff 100%);cursor:url('cursor.png'), pointer;border: 1.6px solid white;font-weight: bold;}
+  .ability-unique {border: 1.7px solid #D4AF37;background: linear-gradient(180deg, #fffdf3 0%, #fff 100%);box-shadow: 0 2px 10px rgba(212,175,55,0.12);color: #3b2b00;padding: 6px;border-radius: 6px;}
+  .ability-desc {font-size: 12px;color: var(--muted);margin-top: 6px;line-height: 1.15;color:#fcba03}
+  .uniqueSkill{padding:6px 8px;border-radius:6px;background:linear-gradient(90deg,#00fbff 0%,#00a2ff 67%);cursor:url('cursor.png'), pointer;border: 2px solid #fcba03;font-weight: bold;}
+  .activeAbility{padding:6px 8px;border-radius:6px;background:linear-gradient(135deg,#eeff00 0%,#ffa600 100%);cursor:url('cursor.png'), pointer;border: 1.9px solid white;font-weight: bold;}
+  .ability-btn.disabled {background: linear-gradient(180deg, #bdbdbd 0%, #7f7f7f 100%) !important;color: #eaeaea !important;box-shadow: none !important;cursor: default !important;transform: none !important;filter: none !important;transition: none !important;opacity: 1 !important;}
+  .ability-btn.disabled:hover,
+  .ability-btn.disabled:active {transform: none !important;filter: none !important;opacity: 1 !important;}
+  .ability-btn[aria-disabled="true"],
+  .ability-btn.disabled[aria-disabled="true"] {background: linear-gradient(180deg, #bdbdbd 0%, #7f7f7f 100%) !important;color: #eaeaea !important;box-shadow: none !important;cursor: default !important;transform: none !important;filter: none !important;transition: none !important;opacity: 1 !important;pointer-events: auto !important;}
+  .ability-btn[aria-disabled="true"]:hover,
+  .ability-btn[aria-disabled="true"]:active,
+  .ability-btn[aria-disabled="true"]:focus {background: linear-gradient(180deg, #bdbdbd 0%, #7f7f7f 100%) !important;box-shadow: none !important;transform: none !important;filter: none !important;outline: none !important;opacity: 1 !important;}
+  button.ability-btn[aria-disabled="true"] { -webkit-tap-highlight-color: transparent !important; }
+  .ability-btn[aria-disabled="true"] {pointer-events:default;}
   .log-entry{margin-bottom:5px;background:rgb(0,0,0,0.7);padding-bottom:6px;border-radius:3px;}
   .warn{color:#ff9b6b}
   .ok{color:var(--good)}
