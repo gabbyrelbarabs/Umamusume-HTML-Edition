@@ -93,311 +93,311 @@ function computeLateStartDelayWithModifiers(origDelay, racer){
 ------------------------- */
 const RACES = [
   // Debut
-  { id: "Debut Race", grade: "Debut", track: "Dirt", distance: 1000, rewardFame: 500, oneTime: true },
+  { id: "Debut Race", grade: "Debut", track: "Dirt", distance: 1000, direction: "Right", rewardFame: 500, oneTime: true },
 
   // G3
-  { id: "Silk Road Stakes", grade: "G3", track: "Turf", distance: 1200, rewardFame: 650 },
-  { id: "Sekiya Kinen", grade: "G3", track: "Turf", distance: 1600, rewardFame: 750 },
-  { id: "Unicorn Stakes", grade: "G3", track: "Dirt", distance: 1600, rewardFame: 700 },
-  { id: "Procyon Stakes", grade: "G3", track: "Dirt", distance: 1400, rewardFame: 600 },
-  { id: "Keisei Hai Autumn Handicap", grade: "G3", track: "Turf", distance: 1600, rewardFame: 750 },
-  { id: "Diamond Stakes", grade: "G3", track: "Turf", distance: 3400, rewardFame: 2000 },
-  { id: "Sirius Stakes", grade: "G3", track: "Dirt", distance: 2000, rewardFame: 1000 },
-  { id: "Miyako Stakes", grade: "G3", track: "Dirt", distance: 1800, rewardFame: 800 },
-  { id: "Hankyu Hai", grade: "G3", track: "Turf", distance: 1400, rewardFame: 750 },
-  { id: "Heian Stakes", grade: "G3", track: "Dirt", distance: 1900, rewardFame: 900 },
+  { id: "Silk Road Stakes", grade: "G3", track: "Turf", distance: 1200, direction: "Right", rewardFame: 650 },
+  { id: "Sekiya Kinen", grade: "G3", track: "Turf", distance: 1600, direction: "Left", rewardFame: 750 },
+  { id: "Unicorn Stakes", grade: "G3", track: "Dirt", distance: 1600, direction: "Left", rewardFame: 700 },
+  { id: "Procyon Stakes", grade: "G3", track: "Dirt", distance: 1400, direction: "Left", rewardFame: 600 },
+  { id: "Keisei Hai Autumn Handicap", grade: "G3", track: "Turf", distance: 1600, direction: "Right", rewardFame: 750 },
+  { id: "Diamond Stakes", grade: "G3", track: "Turf", distance: 3400, direction: "Left", rewardFame: 2000 },
+  { id: "Sirius Stakes", grade: "G3", track: "Dirt", distance: 2000, direction: "Right", rewardFame: 1000 },
+  { id: "Miyako Stakes", grade: "G3", track: "Dirt", distance: 1800, direction: "Right", rewardFame: 800 },
+  { id: "Hankyu Hai", grade: "G3", track: "Turf", distance: 1400, direction: "Right", rewardFame: 750 },
+  { id: "Heian Stakes", grade: "G3", track: "Dirt", distance: 1900, direction: "Right", rewardFame: 900 },
 
   // G2
-  { id: "Keio Hai Junior Stakes", grade: "G2", track: "Turf", distance: 1400, rewardFame: 4000 },
-  { id: "Keio Hai Cup", grade: "G2", track: "Turf", distance: 1600, rewardFame: 6000 },
-  { id: "Tokai Stakes", grade: "G2", track: "Dirt", distance: 1800, rewardFame: 5000 },
-  { id: "Mile Championship Nambu Hai", grade: "G2", track: "Dirt", distance: 1600, rewardFame: 4000 },
-  { id: "Kyoto Daishoten", grade: "G2", track: "Turf", distance: 2400, rewardFame: 8500 },
-  { id: "Centaur Stakes", grade: "G2", track: "Turf", distance: 1200, rewardFame: 4000 },
-  { id: "Kinko Sho", grade: "G2", track: "Turf", distance: 2000, rewardFame: 7500 },
+  { id: "Keio Hai Junior Stakes", grade: "G2", track: "Turf", distance: 1400, direction: "Left", rewardFame: 4000 },
+  { id: "Keio Hai Cup", grade: "G2", track: "Turf", distance: 1600, direction: "Left", rewardFame: 6000 },
+  { id: "Tokai Stakes", grade: "G2", track: "Dirt", distance: 1800, direction: "Left", rewardFame: 5000 },
+  { id: "Mile Championship Nambu Hai", grade: "G2", track: "Dirt", distance: 1600, direction: "Left", rewardFame: 4000 },
+  { id: "Kyoto Daishoten", grade: "G2", track: "Turf", distance: 2400, direction: "Right", rewardFame: 8500 },
+  { id: "Centaur Stakes", grade: "G2", track: "Turf", distance: 1200, direction: "Right", rewardFame: 4000 },
+  { id: "Kinko Sho", grade: "G2", track: "Turf", distance: 2000, direction: "Left", rewardFame: 7500 },
 
   // G1
-  { id: "Champions Cup", grade: "G1", track: "Dirt", distance: 1800, rewardFame: 10000, mustBeFirstG1: true },
-  { id: "Arima Kinen", grade: "G1", track: "Turf", distance: 2500, rewardFame: 15000 },
-  { id: "Tenno Sho", grade: "G1", track: "Turf", distance: 2400, rewardFame: 15000 },
-  { id: "Sprinters Stakes", grade: "G1", track: "Turf", distance: 1200, rewardFame: 10000 },
-  { id: "Tokyo Daishoten", grade: "G1", track: "Dirt", distance: 2000, rewardFame: 12000 },
+  { id: "Champions Cup", grade: "G1", track: "Dirt", distance: 1800, direction: "Left", rewardFame: 10000, mustBeFirstG1: true },
+  { id: "Arima Kinen", grade: "G1", track: "Turf", distance: 2500, direction: "Right", rewardFame: 15000 },
+  { id: "Tenno Sho", grade: "G1", track: "Turf", distance: 3200, direction: "Right", rewardFame: 20000 },
+  { id: "Sprinters Stakes", grade: "G1", track: "Turf", distance: 1200, direction: "Right", rewardFame: 10000 },
+  { id: "Tokyo Daishoten", grade: "G1", track: "Dirt", distance: 2000, direction: "Right", rewardFame: 12000 },
 
   // Finale
   // URA Finale Path
-  { id: "URA Finale - Qualifiers", grade: "Finale", track: "Turf", distance: 1400, rewardFame: 20000, finalePath: "URA Finale", sequence: 1 },
-  { id: "URA Finale - Semi-Finals", grade: "Finale", track: "Dirt", distance: 2000, rewardFame: 25000, finalePath: "URA Finale", sequence: 2 },
-  { id: "URA Finale - Finals", grade: "Finale", track: "Turf", distance: 2500, rewardFame: 30000, finalePath: "URA Finale", sequence: 3 },
+  { id: "URA Finale - Qualifiers", grade: "Finale", track: "Turf", distance: 1400, direction: "Right", rewardFame: 20000, finalePath: "URA Finale", sequence: 1 },
+  { id: "URA Finale - Semi-Finals", grade: "Finale", track: "Dirt", distance: 2000, direction: "Right", rewardFame: 25000, finalePath: "URA Finale", sequence: 2 },
+  { id: "URA Finale - Finals", grade: "Finale", track: "Turf", distance: 2500, direction: "Right", rewardFame: 30000, finalePath: "URA Finale", sequence: 3 },
 
   // Triple Crown Finale Path
-  { id: "Satsuki Sho", grade: "Finale", track: "Turf", distance: 2000, rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 1 },
-  { id: "Tokyo Yushun", grade: "Finale", track: "Turf", distance: 2400, rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 2 },
-  { id: "Kikuka Sho", grade: "Finale", track: "Turf", distance: 3000, rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 3 },
+  { id: "Satsuki Sho", grade: "Finale", track: "Turf", distance: 2000, direction: "Right", rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 1 },
+  { id: "Tokyo Yushun", grade: "Finale", track: "Turf", distance: 2400, direction: "Left", rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 2 },
+  { id: "Kikuka Sho", grade: "Finale", track: "Turf", distance: 3000, direction: "Right", rewardFame: 25000, finalePath: "Triple Crown Finale", sequence: 3 },
 
   // Mongol Derby Finale Path
-  { id: "Mongol Derby", grade: "Finale", track: "Dirt", distance: 1000000, rewardFame: 250000, finalePath: "Mongol Derby", sequence: 1 }
+  { id: "Mongol Derby", grade: "Finale", track: "Dirt", distance: 1000000, direction: "Right", rewardFame: 250000, finalePath: "Mongol Derby", sequence: 1 }
 ];
 
 const OPPONENTS = {
   "Gold Ship": {
-	Debut:{minSpeed:12.02,maxSpeed:14.31,acc:6,stamina:150,regen:1},
-	G3:{minSpeed:12.28,maxSpeed:15.42,acc:8,stamina:170,regen:1.2},
-	G2:{minSpeed:12.54,maxSpeed:16.99,acc:10,stamina:250,regen:1.9},
-	G1:{minSpeed:12.8,maxSpeed:18.55,acc:9,stamina:400,regen:1.6},
-	Finale:{minSpeed:13.06,maxSpeed:19.55,acc:10,stamina:420,regen:1.7},
+	Debut:{minSpeed:12.02,maxSpeed:14.31,acc:3,stamina:150,regen:1},
+	G3:{minSpeed:12.28,maxSpeed:15.42,acc:4,stamina:170,regen:1.2},
+	G2:{minSpeed:12.54,maxSpeed:16.99,acc:5,stamina:250,regen:1.9},
+	G1:{minSpeed:12.8,maxSpeed:18.55,acc:4.5,stamina:400,regen:1.6},
+	Finale:{minSpeed:13.06,maxSpeed:19.55,acc:5,stamina:420,regen:1.7},
   },
   "Mejiro McQueen": {
-	Debut:{minSpeed:12.29,maxSpeed:13.92,acc:6,stamina:160,regen:1.4},
-	G3:{minSpeed:12.55,maxSpeed:15.2,acc:7,stamina:250,regen:1.4},
-	G2:{minSpeed:12.82,maxSpeed:16.09,acc:8,stamina:320,regen:1.5},
-	G1:{minSpeed:13.08,maxSpeed:17.88,acc:9,stamina:500,regen:1.7},
-	Finale:{minSpeed:13.35,maxSpeed:18.88,acc:10,stamina:510,regen:1.8},
+	Debut:{minSpeed:12.29,maxSpeed:13.92,acc:3,stamina:160,regen:1.4},
+	G3:{minSpeed:12.55,maxSpeed:15.2,acc:3.5,stamina:250,regen:1.4},
+	G2:{minSpeed:12.82,maxSpeed:16.09,acc:4,stamina:320,regen:1.5},
+	G1:{minSpeed:13.08,maxSpeed:17.88,acc:4.5,stamina:500,regen:1.7},
+	Finale:{minSpeed:13.35,maxSpeed:18.88,acc:5,stamina:510,regen:1.8},
   },
   "Tokai Teio": {
-	Debut:{minSpeed:12.18,maxSpeed:14.31,acc:7,stamina:145,regen:1.4},
-	G3:{minSpeed:12.44,maxSpeed:15.42,acc:8,stamina:200,regen:1.6},
-	G2:{minSpeed:12.7,maxSpeed:16.76,acc:9,stamina:260,regen:1.8},
-	G1:{minSpeed:12.96,maxSpeed:18.78,acc:9.2,stamina:420,regen:1.8},
-	Finale:{minSpeed:13.23,maxSpeed:19.78,acc:10,stamina:430,regen:1.9},
+	Debut:{minSpeed:12.18,maxSpeed:14.31,acc:3.5,stamina:145,regen:1.4},
+	G3:{minSpeed:12.44,maxSpeed:15.42,acc:4,stamina:200,regen:1.6},
+	G2:{minSpeed:12.7,maxSpeed:16.76,acc:4.5,stamina:260,regen:1.8},
+	G1:{minSpeed:12.96,maxSpeed:18.78,acc:4.6,stamina:420,regen:1.8},
+	Finale:{minSpeed:13.23,maxSpeed:19.78,acc:5,stamina:430,regen:1.9},
   },
   "Kitasan Black": {
-	Debut:{minSpeed:12.12,maxSpeed:14.31,acc:7.2,stamina:150,regen:1.3},
-	G3:{minSpeed:12.38,maxSpeed:15.42,acc:8.3,stamina:220,regen:1.4},
-	G2:{minSpeed:12.64,maxSpeed:16.54,acc:9.1,stamina:290,regen:1.6},
-	G1:{minSpeed:12.9,maxSpeed:18.55,acc:9.5,stamina:440,regen:1.6},
-	Finale:{minSpeed:13.16,maxSpeed:19.55,acc:10.2,stamina:450,regen:1.7},
+	Debut:{minSpeed:12.12,maxSpeed:14.31,acc:3.6,stamina:150,regen:1.3},
+	G3:{minSpeed:12.38,maxSpeed:15.42,acc:4.15,stamina:220,regen:1.4},
+	G2:{minSpeed:12.64,maxSpeed:16.54,acc:4.55,stamina:290,regen:1.6},
+	G1:{minSpeed:12.9,maxSpeed:18.55,acc:4.75,stamina:440,regen:1.6},
+	Finale:{minSpeed:13.16,maxSpeed:19.55,acc:5.1,stamina:450,regen:1.7},
   },
   "Satono Diamond": {
-	Debut:{minSpeed:12.09,maxSpeed:13.96,acc:6,stamina:155,regen:1.4},
-	G3:{minSpeed:12.35,maxSpeed:15.33,acc:7,stamina:230,regen:1.4},
-	G2:{minSpeed:12.61,maxSpeed:16.54,acc:7.5,stamina:315,regen:1.4},
-	G1:{minSpeed:12.87,maxSpeed:18.55,acc:8.5,stamina:450,regen:1.4},
-	Finale:{minSpeed:13.13,maxSpeed:19.55,acc:9.5,stamina:465,regen:1.5},
+	Debut:{minSpeed:12.09,maxSpeed:13.96,acc:3,stamina:155,regen:1.4},
+	G3:{minSpeed:12.35,maxSpeed:15.33,acc:3.5,stamina:230,regen:1.4},
+	G2:{minSpeed:12.61,maxSpeed:16.54,acc:3.75,stamina:315,regen:1.4},
+	G1:{minSpeed:12.87,maxSpeed:18.55,acc:4.25,stamina:450,regen:1.4},
+	Finale:{minSpeed:13.13,maxSpeed:19.55,acc:4.75,stamina:465,regen:1.5},
   },
   "Grass Wonder": {
-	Debut:{minSpeed:11.99,maxSpeed:14.31,acc:6.5,stamina:145,regen:1},
-	G3:{minSpeed:12.25,maxSpeed:15.65,acc:7.5,stamina:220,regen:1.1},
-	G2:{minSpeed:12.51,maxSpeed:16.32,acc:8.5,stamina:300,regen:1.4},
-	G1:{minSpeed:12.77,maxSpeed:18.33,acc:9.0,stamina:430,regen:1.5},
-	Finale:{minSpeed:13.03,maxSpeed:19.33,acc:10,stamina:440,regen:1.6},
+	Debut:{minSpeed:11.99,maxSpeed:14.31,acc:3.25,stamina:145,regen:1},
+	G3:{minSpeed:12.25,maxSpeed:15.65,acc:3.75,stamina:220,regen:1.1},
+	G2:{minSpeed:12.51,maxSpeed:16.32,acc:4.25,stamina:300,regen:1.4},
+	G1:{minSpeed:12.77,maxSpeed:18.33,acc:4.5,stamina:430,regen:1.5},
+	Finale:{minSpeed:13.03,maxSpeed:19.33,acc:5,stamina:440,regen:1.6},
   },
   "Haru Urara": {
-	Debut:{minSpeed:12.12,maxSpeed:13.41,acc:6,stamina:140,regen:0.9},
-	G3:{minSpeed:12.38,maxSpeed:14.08,acc:6,stamina:170,regen:0.9},
-	G2:{minSpeed:12.64,maxSpeed:14.98,acc:6,stamina:200,regen:1.2},
-	G1:{minSpeed:12.9,maxSpeed:16.09,acc:6,stamina:300,regen:1.4},
-	Finale:{minSpeed:13.16,maxSpeed:17.1,acc:7,stamina:360,regen:1.5},
+	Debut:{minSpeed:12.12,maxSpeed:13.41,acc:3,stamina:140,regen:0.9},
+	G3:{minSpeed:12.38,maxSpeed:14.08,acc:3.1,stamina:170,regen:0.9},
+	G2:{minSpeed:12.64,maxSpeed:14.98,acc:3.2,stamina:200,regen:1.2},
+	G1:{minSpeed:12.9,maxSpeed:16.09,acc:3.5,stamina:300,regen:1.4},
+	Finale:{minSpeed:13.16,maxSpeed:17.1,acc:3.6,stamina:360,regen:1.5},
   },
   "Oguri Cap": {
-	Debut:{minSpeed:12.1,maxSpeed:14.31,acc:7.5,stamina:155,regen:1},
-	G3:{minSpeed:12.36,maxSpeed:15.56,acc:9,stamina:230,regen:1.33},
-	G2:{minSpeed:12.62,maxSpeed:16.81,acc:9,stamina:290,regen:1.42},
-	G1:{minSpeed:12.88,maxSpeed:18.64,acc:10,stamina:420,regen:1.65},
-	Finale:{minSpeed:13.14,maxSpeed:19.64,acc:10.5,stamina:440,regen:1.75},
+	Debut:{minSpeed:12.1,maxSpeed:14.31,acc:3.75,stamina:155,regen:1},
+	G3:{minSpeed:12.36,maxSpeed:15.56,acc:4.5,stamina:230,regen:1.33},
+	G2:{minSpeed:12.62,maxSpeed:16.81,acc:4.5,stamina:290,regen:1.42},
+	G1:{minSpeed:12.88,maxSpeed:18.64,acc:5,stamina:420,regen:1.65},
+	Finale:{minSpeed:13.14,maxSpeed:19.64,acc:5.25,stamina:440,regen:1.75},
   },
   "Tamamo Cross": {
-	Debut:{minSpeed:12.09,maxSpeed:14.75,acc:7,stamina:145,regen:1},
-	G3:{minSpeed:12.35,maxSpeed:15.83,acc:8,stamina:230,regen:1.3},
-	G2:{minSpeed:12.61,maxSpeed:17.2,acc:8,stamina:290,regen:1.4},
-	G1:{minSpeed:12.87,maxSpeed:18.78,acc:9,stamina:420,regen:1.5},
-	Finale:{minSpeed:13.13,maxSpeed:19.78,acc:10,stamina:430,regen:1.6},
+	Debut:{minSpeed:12.09,maxSpeed:14.75,acc:3.5,stamina:145,regen:1},
+	G3:{minSpeed:12.35,maxSpeed:15.83,acc:4,stamina:230,regen:1.3},
+	G2:{minSpeed:12.61,maxSpeed:17.2,acc:4,stamina:290,regen:1.4},
+	G1:{minSpeed:12.87,maxSpeed:18.78,acc:4.5,stamina:420,regen:1.5},
+	Finale:{minSpeed:13.13,maxSpeed:19.78,acc:5,stamina:430,regen:1.6},
   },
   "Sakura Bakushin O": {
-	Debut:{minSpeed:12.11,maxSpeed:14.75,acc:7.5,stamina:150,regen:1.05},
-	G3:{minSpeed:12.37,maxSpeed:15.83,acc:8.8,stamina:220,regen:1.35},
-	G2:{minSpeed:12.63,maxSpeed:16.99,acc:9,stamina:280,regen:1.45},
-	G1:{minSpeed:12.89,maxSpeed:18.87,acc:9.6,stamina:400,regen:1.55},
-	Finale:{minSpeed:13.15,maxSpeed:19.87,acc:10.2,stamina:420,regen:1.65},
+	Debut:{minSpeed:12.11,maxSpeed:14.75,acc:3.75,stamina:150,regen:1.05},
+	G3:{minSpeed:12.37,maxSpeed:15.83,acc:4.4,stamina:220,regen:1.35},
+	G2:{minSpeed:12.63,maxSpeed:16.99,acc:4.5,stamina:280,regen:1.45},
+	G1:{minSpeed:12.89,maxSpeed:18.87,acc:4.8,stamina:400,regen:1.55},
+	Finale:{minSpeed:13.15,maxSpeed:19.87,acc:5.1,stamina:420,regen:1.65},
   },
   "Special Week": {
-	Debut:{minSpeed:12.16,maxSpeed:14.31,acc:6.5,stamina:155,regen:1.4},
-	G3:{minSpeed:12.42,maxSpeed:15.42,acc:7.5,stamina:230,regen:1.4},
-	G2:{minSpeed:12.68,maxSpeed:16.54,acc:8.5,stamina:300,regen:1.5},
-	G1:{minSpeed:12.94,maxSpeed:18.51,acc:9.2,stamina:430,regen:1.7},
-	Finale:{minSpeed:13.2,maxSpeed:19.51,acc:10,stamina:450,regen:1.8},
+	Debut:{minSpeed:12.16,maxSpeed:14.31,acc:3.25,stamina:155,regen:1.4},
+	G3:{minSpeed:12.42,maxSpeed:15.42,acc:3.75,stamina:230,regen:1.4},
+	G2:{minSpeed:12.68,maxSpeed:16.54,acc:4.25,stamina:300,regen:1.5},
+	G1:{minSpeed:12.94,maxSpeed:18.51,acc:4.6,stamina:430,regen:1.7},
+	Finale:{minSpeed:13.2,maxSpeed:19.51,acc:5,stamina:450,regen:1.8},
   },
   "Symboli Rudolf": {
-	Debut:{minSpeed:12.22,maxSpeed:14.75,acc:7,stamina:155,regen:1.1},
-	G3:{minSpeed:12.48,maxSpeed:15.7,acc:8,stamina:240,regen:1.2},
-	G2:{minSpeed:12.74,maxSpeed:16.89,acc:9,stamina:320,regen:1.5},
-	G1:{minSpeed:13.01,maxSpeed:18.7,acc:10,stamina:480,regen:1.7},
-	Finale:{minSpeed:13.27,maxSpeed:19.7,acc:10.5,stamina:500,regen:1.8},
+	Debut:{minSpeed:12.22,maxSpeed:14.75,acc:6,stamina:155,regen:1.1},
+	G3:{minSpeed:12.48,maxSpeed:15.7,acc:4,stamina:240,regen:1.2},
+	G2:{minSpeed:12.74,maxSpeed:16.89,acc:4.5,stamina:320,regen:1.5},
+	G1:{minSpeed:13.01,maxSpeed:18.7,acc:5,stamina:480,regen:1.7},
+	Finale:{minSpeed:13.27,maxSpeed:19.7,acc:5.25,stamina:500,regen:1.8},
   },
   "Rice Shower": {
-	Debut:{minSpeed:12.28,maxSpeed:13.64,acc:6,stamina:157,regen:1.5},
-	G3:{minSpeed:12.54,maxSpeed:14.98,acc:8,stamina:230,regen:1.7},
-	G2:{minSpeed:12.81,maxSpeed:16.28,acc:8.5,stamina:310,regen:1.8},
-	G1:{minSpeed:13.07,maxSpeed:17.88,acc:9,stamina:490,regen:1.9},
-	Finale:{minSpeed:13.34,maxSpeed:18.88,acc:10,stamina:500,regen:2.0},
+	Debut:{minSpeed:12.28,maxSpeed:13.64,acc:3,stamina:157,regen:1.5},
+	G3:{minSpeed:12.54,maxSpeed:14.98,acc:4,stamina:230,regen:1.7},
+	G2:{minSpeed:12.81,maxSpeed:16.28,acc:4.25,stamina:310,regen:1.8},
+	G1:{minSpeed:13.07,maxSpeed:17.88,acc:4.5,stamina:490,regen:1.9},
+	Finale:{minSpeed:13.34,maxSpeed:18.88,acc:5,stamina:500,regen:2.0},
   },
   "Agnes Tachyon": {
-	Debut:{minSpeed:12.04,maxSpeed:14.31,acc:7.5,stamina:155,regen:1},
-	G3:{minSpeed:12.3,maxSpeed:15.47,acc:8,stamina:240,regen:1.2},
-	G2:{minSpeed:12.56,maxSpeed:16.99,acc:9,stamina:310,regen:1.4},
-	G1:{minSpeed:12.82,maxSpeed:18.78,acc:9.6,stamina:450,regen:1.5},
-	Finale:{minSpeed:13.08,maxSpeed:19.78,acc:10.4,stamina:460,regen:1.6},
+	Debut:{minSpeed:12.04,maxSpeed:14.31,acc:3.75,stamina:155,regen:1},
+	G3:{minSpeed:12.3,maxSpeed:15.47,acc:4,stamina:240,regen:1.2},
+	G2:{minSpeed:12.56,maxSpeed:16.99,acc:4.5,stamina:310,regen:1.4},
+	G1:{minSpeed:12.82,maxSpeed:18.78,acc:4.8,stamina:450,regen:1.5},
+	Finale:{minSpeed:13.08,maxSpeed:19.78,acc:5.2,stamina:460,regen:1.6},
   },
   "Silence Suzuka": {
-	Debut:{minSpeed:12.26,maxSpeed:14.53,acc:6,stamina:150,regen:1},
-	G3:{minSpeed:12.52,maxSpeed:15.87,acc:7,stamina:220,regen:1.1},
-	G2:{minSpeed:12.79,maxSpeed:16.54,acc:8,stamina:300,regen:1.4},
-	G1:{minSpeed:13.05,maxSpeed:18.55,acc:8.5,stamina:430,regen:1.5},
-	Finale:{minSpeed:13.32,maxSpeed:19.55,acc:9.5,stamina:440,regen:1.6},
+	Debut:{minSpeed:12.26,maxSpeed:14.53,acc:3,stamina:150,regen:1},
+	G3:{minSpeed:12.52,maxSpeed:15.87,acc:3.5,stamina:220,regen:1.1},
+	G2:{minSpeed:12.79,maxSpeed:16.54,acc:4,stamina:300,regen:1.4},
+	G1:{minSpeed:13.05,maxSpeed:18.55,acc:4.25,stamina:430,regen:1.5},
+	Finale:{minSpeed:13.32,maxSpeed:19.55,acc:4.75,stamina:440,regen:1.6},
   },
   "King Halo": {
-	Debut:{minSpeed:11.98,maxSpeed:14.75,acc:6,stamina:145,regen:1},
-	G3:{minSpeed:12.24,maxSpeed:15.92,acc:7,stamina:180,regen:1.1},
-	G2:{minSpeed:12.5,maxSpeed:17.2,acc:7.5,stamina:210,regen:1.2},
-	G1:{minSpeed:12.76,maxSpeed:19.22,acc:8,stamina:350,regen:1.2},
-	Finale:{minSpeed:13.02,maxSpeed:20.1,acc:9,stamina:370,regen:1.3},
+	Debut:{minSpeed:11.98,maxSpeed:14.75,acc:3,stamina:145,regen:1},
+	G3:{minSpeed:12.24,maxSpeed:15.92,acc:3.5,stamina:180,regen:1.1},
+	G2:{minSpeed:12.5,maxSpeed:17.2,acc:3.75,stamina:210,regen:1.2},
+	G1:{minSpeed:12.76,maxSpeed:19.22,acc:4,stamina:350,regen:1.2},
+	Finale:{minSpeed:13.02,maxSpeed:20.1,acc:4.5,stamina:370,regen:1.3},
   },
   "T.M. Opera O": {
-	Debut:{minSpeed:12.28,maxSpeed:14.31,acc:6,stamina:160,regen:1},
-	G3:{minSpeed:12.54,maxSpeed:15.42,acc:8,stamina:210,regen:1.2},
-	G2:{minSpeed:12.81,maxSpeed:17.13,acc:8,stamina:300,regen:1.3},
-	G1:{minSpeed:13.07,maxSpeed:18.87,acc:9.5,stamina:480,regen:1.5},
-	Finale:{minSpeed:13.34,maxSpeed:19.87,acc:10.2,stamina:490,regen:1.6},
+	Debut:{minSpeed:12.28,maxSpeed:14.31,acc:3,stamina:160,regen:1},
+	G3:{minSpeed:12.54,maxSpeed:15.42,acc:4,stamina:210,regen:1.2},
+	G2:{minSpeed:12.81,maxSpeed:17.13,acc:4,stamina:300,regen:1.3},
+	G1:{minSpeed:13.07,maxSpeed:18.87,acc:4.25,stamina:480,regen:1.5},
+	Finale:{minSpeed:13.34,maxSpeed:19.87,acc:5.1,stamina:490,regen:1.6},
   },
   "Mihono Bourbon": {
-	Debut:{minSpeed:12.28,maxSpeed:14.26,acc:7.5,stamina:155,regen:1},
-	G3:{minSpeed:12.54,maxSpeed:15.87,acc:7.5,stamina:225,regen:1.2},
-	G2:{minSpeed:12.81,maxSpeed:16.89,acc:8,stamina:315,regen:1.3},
-	G1:{minSpeed:13.07,maxSpeed:18.55,acc:8.5,stamina:450,regen:1.4},
-	Finale:{minSpeed:13.34,maxSpeed:19.55,acc:9.5,stamina:460,regen:1.5},
+	Debut:{minSpeed:12.28,maxSpeed:14.26,acc:3.75,stamina:155,regen:1},
+	G3:{minSpeed:12.54,maxSpeed:15.87,acc:3.75,stamina:225,regen:1.2},
+	G2:{minSpeed:12.81,maxSpeed:16.89,acc:4,stamina:315,regen:1.3},
+	G1:{minSpeed:13.07,maxSpeed:18.55,acc:4.25,stamina:450,regen:1.4},
+	Finale:{minSpeed:13.34,maxSpeed:19.55,acc:4.75,stamina:460,regen:1.5},
   },
   "Super Creek": {
-	Debut:{minSpeed:12.26,maxSpeed:14.31,acc:7.5,stamina:150,regen:1.2},
-	G3:{minSpeed:12.52,maxSpeed:15.65,acc:9,stamina:220,regen:1.4},
-	G2:{minSpeed:12.79,maxSpeed:16.89,acc:9,stamina:320,regen:1.4},
-	G1:{minSpeed:13.05,maxSpeed:18.46,acc:9.5,stamina:400,regen:1.6},
-	Finale:{minSpeed:13.32,maxSpeed:19.46,acc:10,stamina:425,regen:1.7},
+	Debut:{minSpeed:12.26,maxSpeed:14.31,acc:3.75,stamina:150,regen:1.2},
+	G3:{minSpeed:12.52,maxSpeed:15.65,acc:4.5,stamina:220,regen:1.4},
+	G2:{minSpeed:12.79,maxSpeed:16.89,acc:4.5,stamina:320,regen:1.4},
+	G1:{minSpeed:13.05,maxSpeed:18.46,acc:4.75,stamina:400,regen:1.6},
+	Finale:{minSpeed:13.32,maxSpeed:19.46,acc:5,stamina:425,regen:1.7},
   },
   "Winning Ticket": {
-	Debut:{minSpeed:11.99,maxSpeed:14.08,acc:7,stamina:150,regen:1},
-	G3:{minSpeed:12.25,maxSpeed:15.42,acc:8,stamina:240,regen:1.1},
-	G2:{minSpeed:12.51,maxSpeed:16.54,acc:9,stamina:320,regen:1.1},
-	G1:{minSpeed:12.77,maxSpeed:18.33,acc:9.2,stamina:440,regen:1.2},
-	Finale:{minSpeed:13.03,maxSpeed:19.33,acc:9.8,stamina:470,regen:1.3},
+	Debut:{minSpeed:11.99,maxSpeed:14.08,acc:3.5,stamina:150,regen:1},
+	G3:{minSpeed:12.25,maxSpeed:15.42,acc:4,stamina:240,regen:1.1},
+	G2:{minSpeed:12.51,maxSpeed:16.54,acc:4.5,stamina:320,regen:1.1},
+	G1:{minSpeed:12.77,maxSpeed:18.33,acc:4.6,stamina:440,regen:1.2},
+	Finale:{minSpeed:13.03,maxSpeed:19.33,acc:4.9,stamina:470,regen:1.3},
   },
   "Hishi Amazon": {
-	Debut:{minSpeed:12.08,maxSpeed:14.31,acc:6.5,stamina:145,regen:0.9},
-	G3:{minSpeed:12.34,maxSpeed:15.83,acc:7.5,stamina:230,regen:1},
-	G2:{minSpeed:12.6,maxSpeed:16.99,acc:8.8,stamina:310,regen:1},
-	G1:{minSpeed:12.86,maxSpeed:18.78,acc:9,stamina:390,regen:1.1},
-	Finale:{minSpeed:13.12,maxSpeed:19.78,acc:10,stamina:400,regen:1.2},
+	Debut:{minSpeed:12.08,maxSpeed:14.31,acc:3.25,stamina:145,regen:0.9},
+	G3:{minSpeed:12.34,maxSpeed:15.83,acc:3.75,stamina:230,regen:1},
+	G2:{minSpeed:12.6,maxSpeed:16.99,acc:4.4,stamina:310,regen:1},
+	G1:{minSpeed:12.86,maxSpeed:18.78,acc:4.5,stamina:390,regen:1.1},
+	Finale:{minSpeed:13.12,maxSpeed:19.78,acc:5,stamina:400,regen:1.2},
   },
   "Still In Love": {
-	Debut:{minSpeed:12.16,maxSpeed:14.08,acc:7,stamina:152,regen:1},
-	G3:{minSpeed:12.42,maxSpeed:15.65,acc:8,stamina:240,regen:1.1},
-	G2:{minSpeed:12.68,maxSpeed:16.76,acc:8.5,stamina:360,regen:1.1},
-	G1:{minSpeed:12.94,maxSpeed:18.33,acc:9.1,stamina:450,regen:1.3},
-	Finale:{minSpeed:13.2,maxSpeed:19.33,acc:9.7,stamina:460,regen:1.4},
+	Debut:{minSpeed:12.16,maxSpeed:14.08,acc:3.5,stamina:152,regen:1},
+	G3:{minSpeed:12.42,maxSpeed:15.65,acc:4,stamina:240,regen:1.1},
+	G2:{minSpeed:12.68,maxSpeed:16.76,acc:4.25,stamina:360,regen:1.1},
+	G1:{minSpeed:12.94,maxSpeed:18.33,acc:4.55,stamina:450,regen:1.3},
+	Finale:{minSpeed:13.2,maxSpeed:19.33,acc:4.85,stamina:460,regen:1.4},
   },
   "Stay Gold": {
-	Debut:{minSpeed:12.29,maxSpeed:14.22,acc:7,stamina:150,regen:1.4},
-	G3:{minSpeed:12.55,maxSpeed:15.2,acc:7.5,stamina:230,regen:1.6},
-	G2:{minSpeed:12.82,maxSpeed:17.08,acc:8,stamina:280,regen:1.8},
-	G1:{minSpeed:13,maxSpeed:18.42,acc:8.5,stamina:390,regen:1.9},
-	Finale:{minSpeed:13.35,maxSpeed:19.42,acc:9.5,stamina:400,regen:2.0},
+	Debut:{minSpeed:12.29,maxSpeed:14.22,acc:3.5,stamina:150,regen:1.4},
+	G3:{minSpeed:12.55,maxSpeed:15.2,acc:3.75,stamina:230,regen:1.6},
+	G2:{minSpeed:12.82,maxSpeed:17.08,acc:4,stamina:280,regen:1.8},
+	G1:{minSpeed:13,maxSpeed:18.42,acc:4.25,stamina:390,regen:1.9},
+	Finale:{minSpeed:13.35,maxSpeed:19.42,acc:4.75,stamina:400,regen:2.0},
   },
   "Orfevre": {
-	Debut:{minSpeed:11.97,maxSpeed:14.75,acc:6.5,stamina:155,regen:0.6},
-	G3:{minSpeed:12.23,maxSpeed:15.65,acc:7.5,stamina:250,regen:0.8},
-	G2:{minSpeed:12.49,maxSpeed:17.13,acc:8.5,stamina:350,regen:1},
-	G1:{minSpeed:12.75,maxSpeed:18.78,acc:9,stamina:420,regen:1.1},
-	Finale:{minSpeed:13,maxSpeed:19.78,acc:10,stamina:450,regen:1.2},
+	Debut:{minSpeed:11.97,maxSpeed:14.75,acc:3.25,stamina:155,regen:0.6},
+	G3:{minSpeed:12.23,maxSpeed:15.65,acc:3.75,stamina:250,regen:0.8},
+	G2:{minSpeed:12.49,maxSpeed:17.13,acc:4.25,stamina:350,regen:1},
+	G1:{minSpeed:12.75,maxSpeed:18.78,acc:4.5,stamina:420,regen:1.1},
+	Finale:{minSpeed:13,maxSpeed:19.78,acc:5,stamina:450,regen:1.2},
   },
   "Maruzensky":{
-	Debut: {minSpeed:12.26,maxSpeed:14.75,acc:8,stamina:140,regen:1},
-	G3: {minSpeed:12.52,maxSpeed:15.87,acc:8.5,stamina:180,regen:1.1},
-	G2: {minSpeed:12.79,maxSpeed:17.08,acc:9,stamina:220,regen:1.1},
-	G1: {minSpeed:13.05,maxSpeed:19.01,acc:9,stamina:320,regen:1.3},
-	Finale:{minSpeed:13.32,maxSpeed:20,acc:10,stamina:350,regen:1.4},
+	Debut: {minSpeed:12.26,maxSpeed:14.75,acc:4,stamina:140,regen:1},
+	G3: {minSpeed:12.52,maxSpeed:15.87,acc:4.25,stamina:180,regen:1.1},
+	G2: {minSpeed:12.79,maxSpeed:17.08,acc:4.5,stamina:220,regen:1.1},
+	G1: {minSpeed:13.05,maxSpeed:19.01,acc:4.5,stamina:320,regen:1.3},
+	Finale:{minSpeed:13.32,maxSpeed:20,acc:5,stamina:350,regen:1.4},
   },
   "Daiwa Scarlet":{
-	Debut: {minSpeed:12.21,maxSpeed:14.75,acc:6.5,stamina:155,regen:1.2},
-	G3: {minSpeed:12.47,maxSpeed:15.42,acc:7,stamina:240,regen:1.4},
-	G2: {minSpeed:12.73,maxSpeed:16.76,acc:7.5,stamina:320,regen:1.5},
-	G1: {minSpeed:13,maxSpeed:18.55,acc:8,stamina:420,regen:1.7},
-	Finale:{minSpeed:13.26,maxSpeed:19.56,acc:9,stamina:440,regen:1.8},
+	Debut: {minSpeed:12.21,maxSpeed:14.75,acc:3.25,stamina:155,regen:1.2},
+	G3: {minSpeed:12.47,maxSpeed:15.42,acc:3.5,stamina:240,regen:1.4},
+	G2: {minSpeed:12.73,maxSpeed:16.76,acc:3.75,stamina:320,regen:1.5},
+	G1: {minSpeed:13,maxSpeed:18.55,acc:4,stamina:420,regen:1.7},
+	Finale:{minSpeed:13.26,maxSpeed:19.56,acc:4.5,stamina:440,regen:1.8},
   },
   "Vodka":{
-	Debut: {minSpeed:12,maxSpeed:14.31,acc:7,stamina:145,regen:0.9},
-	G3: {minSpeed:12.26,maxSpeed:15.65,acc:7.5,stamina:220,regen:1},
-	G2: {minSpeed:12.52,maxSpeed:16.99,acc:8.5,stamina:300,regen:1},
-	G1: {minSpeed:12.78,maxSpeed:18.78,acc:9,stamina:390,regen:1.1},
-	Finale:{minSpeed:13.04,maxSpeed:19.78,acc:10,stamina:400,regen:1.2},
+	Debut: {minSpeed:12,maxSpeed:14.31,acc:3.5,stamina:145,regen:0.9},
+	G3: {minSpeed:12.26,maxSpeed:15.65,acc:3.75,stamina:220,regen:1},
+	G2: {minSpeed:12.52,maxSpeed:16.99,acc:4.25,stamina:300,regen:1},
+	G1: {minSpeed:12.78,maxSpeed:18.78,acc:4.5,stamina:390,regen:1.1},
+	Finale:{minSpeed:13.04,maxSpeed:19.78,acc:5,stamina:400,regen:1.2},
   },
   "Matikanetannhauser":{
-	Debut: {minSpeed:12.14,maxSpeed:14.31,acc:6.9,stamina:150,regen:1.1},
-	G3: {minSpeed:12.4,maxSpeed:15.42,acc:7.5,stamina:220,regen:1.2},
-	G2: {minSpeed:12.66,maxSpeed:16.54,acc:8.1,stamina:300,regen:1.3},
-	G1: {minSpeed:12.92,maxSpeed:18.7,acc:8.6,stamina:400,regen:1.4},
-	Finale:{minSpeed:13.18,maxSpeed:19.7,acc:9.6,stamina:430,regen:1.5},
+	Debut: {minSpeed:12.14,maxSpeed:14.31,acc:3.45,stamina:150,regen:1.1},
+	G3: {minSpeed:12.4,maxSpeed:15.42,acc:3.75,stamina:220,regen:1.2},
+	G2: {minSpeed:12.66,maxSpeed:16.54,acc:4.05,stamina:300,regen:1.3},
+	G1: {minSpeed:12.92,maxSpeed:18.7,acc:4.3,stamina:400,regen:1.4},
+	Finale:{minSpeed:13.18,maxSpeed:19.7,acc:4.8,stamina:430,regen:1.5},
   },
   "Meisho Doto":{
-	Debut: {minSpeed:12.22,maxSpeed:14.08,acc:6.5,stamina:155,regen:1},
-	G3: {minSpeed:12.48,maxSpeed:15.42,acc:7,stamina:240,regen:1.1},
-	G2: {minSpeed:12.74,maxSpeed:16.54,acc:8,stamina:320,regen:1.3},
-	G1: {minSpeed:13.01,maxSpeed:18.33,acc:8.5,stamina:460,regen:1.5},
-	Finale:{minSpeed:13.27,maxSpeed:19.34,acc:9.5,stamina:480,regen:1.6},
+	Debut: {minSpeed:12.22,maxSpeed:14.08,acc:3.25,stamina:155,regen:1},
+	G3: {minSpeed:12.48,maxSpeed:15.42,acc:3.5,stamina:240,regen:1.1},
+	G2: {minSpeed:12.74,maxSpeed:16.54,acc:4,stamina:320,regen:1.3},
+	G1: {minSpeed:13.01,maxSpeed:18.33,acc:4.25,stamina:460,regen:1.5},
+	Finale:{minSpeed:13.27,maxSpeed:19.34,acc:4.75,stamina:480,regen:1.6},
   },
   "Taiki Shuttle":{
-	Debut: {minSpeed:12.19,maxSpeed:14.53,acc:8.5,stamina:140,regen:1.1},
-	G3: {minSpeed:12.45,maxSpeed:15.65,acc:9,stamina:180,regen:1.1},
-	G2: {minSpeed:12.71,maxSpeed:17.16,acc:9.5,stamina:250,regen:1.2},
-	G1: {minSpeed:12.97,maxSpeed:19.05,acc:10,stamina:300,regen:1.2},
-	Finale:{minSpeed:13.24,maxSpeed:20.01,acc:10.5,stamina:320,regen:1.3},
+	Debut: {minSpeed:12.19,maxSpeed:14.53,acc:4.25,stamina:140,regen:1.1},
+	G3: {minSpeed:12.45,maxSpeed:15.65,acc:4.5,stamina:180,regen:1.1},
+	G2: {minSpeed:12.71,maxSpeed:17.16,acc:4.75,stamina:250,regen:1.2},
+	G1: {minSpeed:12.97,maxSpeed:19.05,acc:5,stamina:300,regen:1.2},
+	Finale:{minSpeed:13.24,maxSpeed:20.01,acc:5.25,stamina:320,regen:1.3},
   },
   "Biwa Hayahide":{
-	Debut: {minSpeed:12.19,maxSpeed:14.31,acc:7,stamina:155,regen:1.2},
-	G3: {minSpeed:12.45,maxSpeed:15.2,acc:7.5,stamina:250,regen:1.2},
-	G2: {minSpeed:12.71,maxSpeed:16.76,acc:8,stamina:310,regen:1.3},
-	G1: {minSpeed:12.97,maxSpeed:18.61,acc:8,stamina:430,regen:1.4},
-	Finale:{minSpeed:13.24,maxSpeed:19.61,acc:9,stamina:445,regen:1.5},
+	Debut: {minSpeed:12.19,maxSpeed:14.31,acc:3.5,stamina:155,regen:1.2},
+	G3: {minSpeed:12.45,maxSpeed:15.2,acc:3.75,stamina:250,regen:1.2},
+	G2: {minSpeed:12.71,maxSpeed:16.76,acc:4,stamina:310,regen:1.3},
+	G1: {minSpeed:12.97,maxSpeed:18.61,acc:4,stamina:430,regen:1.4},
+	Finale:{minSpeed:13.24,maxSpeed:19.61,acc:4.55,stamina:445,regen:1.5},
   },
   "Air Shakur":{
-	Debut: {minSpeed:11.94,maxSpeed:14.75,acc:6.5,stamina:155,regen:0.6},
-	G3: {minSpeed:12.2,maxSpeed:15.65,acc:7.2,stamina:240,regen:0.8},
-	G2: {minSpeed:12.46,maxSpeed:16.99,acc:8,stamina:300,regen:0.9},
-	G1: {minSpeed:12.71,maxSpeed:18.78,acc:8.3,stamina:410,regen:1},
-	Finale:{minSpeed:12.97,maxSpeed:19.78,acc:9.3,stamina:420,regen:1.1},
+	Debut: {minSpeed:11.94,maxSpeed:14.75,acc:3.25,stamina:155,regen:0.6},
+	G3: {minSpeed:12.2,maxSpeed:15.65,acc:3.6,stamina:240,regen:0.8},
+	G2: {minSpeed:12.46,maxSpeed:16.99,acc:4,stamina:300,regen:0.9},
+	G1: {minSpeed:12.71,maxSpeed:18.78,acc:4.2,stamina:410,regen:1},
+	Finale:{minSpeed:12.97,maxSpeed:19.78,acc:4.65,stamina:420,regen:1.1},
   },
   "Seiun Sky":{
-	Debut: {minSpeed:12.09,maxSpeed:14.59,acc:7,stamina:160,regen:1},
-	G3: {minSpeed:12.35,maxSpeed:15.56,acc:7.5,stamina:250,regen:1.1},
-	G2: {minSpeed:12.61,maxSpeed:16.76,acc:8,stamina:320,regen:1.2},
-	G1: {minSpeed:12.87,maxSpeed:18.55,acc:8.5,stamina:440,regen:1.3},
-	Finale:{minSpeed:13.13,maxSpeed:19.56,acc:9.5,stamina:450,regen:1.4},
+	Debut: {minSpeed:12.09,maxSpeed:14.59,acc:3.5,stamina:160,regen:1},
+	G3: {minSpeed:12.35,maxSpeed:15.56,acc:3.75,stamina:250,regen:1.1},
+	G2: {minSpeed:12.61,maxSpeed:16.76,acc:4,stamina:320,regen:1.2},
+	G1: {minSpeed:12.87,maxSpeed:18.55,acc:4.25,stamina:440,regen:1.3},
+	Finale:{minSpeed:13.13,maxSpeed:19.56,acc:4.25,stamina:450,regen:1.4},
   },
   "Fenomeno":{
-	Debut: {minSpeed:12.25,maxSpeed:13.8,acc:6.5,stamina:160,regen:1.4},
-	G3: {minSpeed:12.51,maxSpeed:15.3,acc:7,stamina:250,regen:1.6},
-	G2: {minSpeed:12.78,maxSpeed:16.33,acc:7.5,stamina:320,regen:1.7},
-	G1: {minSpeed:13.04,maxSpeed:18.05,acc:8,stamina:480,regen:1.8},
-	Finale:{minSpeed:13.3,maxSpeed:19,acc:8.5,stamina:500,regen:1.85},
+	Debut: {minSpeed:12.25,maxSpeed:13.8,acc:3.25,stamina:160,regen:1.4},
+	G3: {minSpeed:12.51,maxSpeed:15.3,acc:3.5,stamina:250,regen:1.6},
+	G2: {minSpeed:12.78,maxSpeed:16.33,acc:3.75,stamina:320,regen:1.7},
+	G1: {minSpeed:13.04,maxSpeed:18.05,acc:4,stamina:480,regen:1.8},
+	Finale:{minSpeed:13.3,maxSpeed:19,acc:4.25,stamina:500,regen:1.85},
   },
   //UMA LEGENDS
   "Man o' War": {
-	Debut:{minSpeed:12.28,maxSpeed:14.55,acc:7.5,stamina:155,regen:1.2},
-	G3:{minSpeed:12.54,maxSpeed:15.6,acc:8,stamina:230,regen:1.3},
-	G2:{minSpeed:12.81,maxSpeed:17.2,acc:8.5,stamina:320,regen:1.4},
-	G1:{minSpeed:13.07,maxSpeed:19,acc:9,stamina:480,regen:1.5},
-	Finale:{minSpeed:13.34,maxSpeed:19.22,acc:9.5,stamina:500, regen:1.6},
+	Debut:{minSpeed:12.28,maxSpeed:14.55,acc:3.75,stamina:155,regen:1.2},
+	G3:{minSpeed:12.54,maxSpeed:15.6,acc:4,stamina:230,regen:1.3},
+	G2:{minSpeed:12.81,maxSpeed:17.2,acc:4.25,stamina:320,regen:1.4},
+	G1:{minSpeed:13.07,maxSpeed:19,acc:4.5,stamina:480,regen:1.5},
+	Finale:{minSpeed:13.34,maxSpeed:19.22,acc:4.75,stamina:500, regen:1.6},
   },
   "KINCSEM": {
-	Debut:{minSpeed:12.34,maxSpeed:14.31,acc:8,stamina:160,regen:1.2},
-	G3:{minSpeed:12.6,maxSpeed:15.55,acc:8.5,stamina:250,regen:1.4},
-	G2:{minSpeed:12.87,maxSpeed:16.2,acc:9,stamina:360,regen:1.7},
-	G1:{minSpeed:13.13,maxSpeed:18.72,acc:9.5,stamina:500,regen:1.9},
-	Finale:{minSpeed:13.4,maxSpeed:19.02,acc:10.2,stamina:510, regen:2.0},
+	Debut:{minSpeed:12.34,maxSpeed:14.31,acc:4,stamina:160,regen:1.2},
+	G3:{minSpeed:12.6,maxSpeed:15.55,acc:4.25,stamina:250,regen:1.4},
+	G2:{minSpeed:12.87,maxSpeed:16.2,acc:4.5,stamina:360,regen:1.7},
+	G1:{minSpeed:13.13,maxSpeed:18.72,acc:4.75,stamina:500,regen:1.9},
+	Finale:{minSpeed:13.4,maxSpeed:19.02,acc:5.1,stamina:510, regen:2.0},
   },
   "Secretariat": {
-	Debut:{minSpeed:12.29,maxSpeed:14.51,acc:8,stamina:145,regen:1.4},
-	G3:{minSpeed:12.55,maxSpeed:15.85,acc:8,stamina:200,regen:1.5},
-	G2:{minSpeed:12.82,maxSpeed:17.25,acc:9,stamina:300,regen:1.6},
-	G1:{minSpeed:13.08,maxSpeed:19.22,acc:9.5,stamina:450,regen:1.7},
-	Finale:{minSpeed:13.35,maxSpeed:20.22,acc:10.5,stamina:480, regen:1.8},
+	Debut:{minSpeed:12.29,maxSpeed:14.51,acc:4,stamina:145,regen:1.4},
+	G3:{minSpeed:12.55,maxSpeed:15.85,acc:4.2,stamina:200,regen:1.5},
+	G2:{minSpeed:12.82,maxSpeed:17.25,acc:4.5,stamina:300,regen:1.6},
+	G1:{minSpeed:13.08,maxSpeed:19.22,acc:4.75,stamina:450,regen:1.7},
+	Finale:{minSpeed:13.35,maxSpeed:20.22,acc:5.25,stamina:480, regen:1.8},
   },
 };
 
@@ -871,44 +871,52 @@ if(!state.abilities) state.abilities = DEFAULT_PLAYER.abilities;
   - Passives have condition, apply, remove
   - Actives have fn handlers in useActiveById
 ------------------------- */
+const PASSIVE_CONFLICT_GROUPS = [
+  ["Dirty Runner", "Turf Runner"],
+  ["Sunny Days", "Cloudy Days", "Rainy Days"],
+  ["Firm Conditions", "Wet Conditions"],
+  ["Focus", "Concentration"],
+  ["Left-Handed", "Right-Handed"],
+];
+
 const ABILITIES = {
   passives: [
-    {id:"Dirty Runner", cost:50, desc: "",
+    {id:"Dirty Runner", cost:50, desc: "Increase performance on Dirt tracks.",
       condition:(rs,p)=> rs.race.track === "Dirt",
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.DirtyRunner){ r._mods.DirtyRunner = r.maxSpeed*0.05; r.maxSpeed += r._mods.DirtyRunner; } },
       remove:(r)=>{ if(r._mods && r._mods.DirtyRunner){ r.maxSpeed -= r._mods.DirtyRunner; delete r._mods.DirtyRunner; } }
     },
-	{id:"Turf Runner", cost:80, desc: "",
+	{id:"Turf Runner", cost:80, desc: "Increase performance on Turf tracks.",
       condition:(rs,p)=> rs.race.track === "Turf",
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.TurfRunner){ r._mods.TurfRunner = r.maxSpeed*0.05; r.maxSpeed += r._mods.TurfRunner; } },
       remove:(r)=>{ if(r._mods && r._mods.TurfRunner){ r.maxSpeed -= r._mods.TurfRunner; delete r._mods.TurfRunner; } }
     },
-    {id:"Lucky Seven", cost:100, desc: "",
+    {id:"Lucky Seven", cost:100, desc: "Good things will happen if placed in bracket 7.",
       condition:(rs,p)=> p.number===7,
       apply:(r,rs)=>{ r._mods = r._mods||{}; if(!r._mods.LuckySeven){ r._mods.LuckySeven = {ms:r.maxSpeed*0.05,ac:r.acc*0.05}; r.maxSpeed += r._mods.LuckySeven.ms; r.acc += r._mods.LuckySeven.ac; } },
       remove:(r)=>{ if(r._mods && r._mods.LuckySeven){ r.maxSpeed -= r._mods.LuckySeven.ms; r.acc -= r._mods.LuckySeven.ac; delete r._mods.LuckySeven; } }
     },
-	{id: "Sunny Days", cost: 50, desc: "",
+	{id: "Sunny Days", cost: 50, desc: "Increase performance in Sunny weather.",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.SunnyDaysActive) { if (!rs || rs.weather !== "Sunny") { if (typeof r._mods.SunnyDays.prev === "number") r.maxSpeed = r._mods.SunnyDays.prev; delete r._mods.SunnyDaysActive; delete r._mods.SunnyDays; } return; } r._mods.SunnyDaysActive = true; r._mods.SunnyDays = r._mods.SunnyDays || {}; r._mods.SunnyDays.prev = r.maxSpeed || 0; if (rs && rs.weather === "Sunny") r.maxSpeed = (r.maxSpeed || 0) * 1.08; else r.maxSpeed = (r.maxSpeed || 0) * 0.92; },
 	  remove: (r) => { if (!r._mods || !r._mods.SunnyDays) return; if (typeof r._mods.SunnyDays.prev === "number") r.maxSpeed = r._mods.SunnyDays.prev; delete r._mods.SunnyDays; delete r._mods.SunnyDaysActive; }
 	},
-	{id: "Cloudy Days", cost: 50, desc: "",
+	{id: "Cloudy Days", cost: 50, desc: "Increase performance in Cloudy weather.",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.CloudyDaysActive) { if (!rs || rs.weather !== "Cloudy") { if (typeof r._mods.CloudyDays.prev === "number") r.maxSpeed = r._mods.CloudyDays.prev; if (typeof r._mods.CloudyDays.prevAcc === "number") r.acc = r._mods.CloudyDays.prevAcc; delete r._mods.CloudyDaysActive; delete r._mods.CloudyDays; } return; } r._mods.CloudyDaysActive = true; r._mods.CloudyDays = r._mods.CloudyDays || {}; r._mods.CloudyDays.prev = r.maxSpeed || 0; r._mods.CloudyDays.prevAcc = r.acc || 0; if (rs && rs.weather === "Cloudy") { if (rs.track === "Good" && r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') { r.maxSpeed = (r._mods._prev.maxSpeed || 0) * 1.05; } else { r.maxSpeed = (r.maxSpeed || 0) * 1.05; } } else { r.maxSpeed = (r.maxSpeed || 0) * 0.95; } },
 	  remove: (r) => { if (!r._mods || !r._mods.CloudyDays) return; if (typeof r._mods.CloudyDays.prev === "number") r.maxSpeed = r._mods.CloudyDays.prev; if (typeof r._mods.CloudyDays.prevAcc === "number") r.acc = r._mods.CloudyDays.prevAcc; delete r._mods.CloudyDays; delete r._mods.CloudyDaysActive; }
 	},
-	{id: "Rainy Days", cost: 50, desc: "",
+	{id: "Rainy Days", cost: 50, desc: "Increase performance in Rainy weather.",
 	  condition: (rs,p) => { if (!rs||!p) return false; return true; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.RainyDaysActive) { if (!rs || rs.weather !== "Rainy") { if (typeof r._mods.RainyDays.prev === "number") r.maxSpeed = r._mods.RainyDays.prev; if (typeof r._mods.RainyDays.prevAcc === "number") r.acc = r._mods.RainyDays.prevAcc; delete r._mods.RainyDaysActive; delete r._mods.RainyDays; } return; } r._mods.RainyDaysActive = true; r._mods.RainyDays = r._mods.RainyDays || {}; r._mods.RainyDays.prev = r.maxSpeed || 0; r._mods.RainyDays.prevAcc = r.acc || 0; if (rs && rs.weather === "Rainy") { if (rs.track === "Wet" && r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') { r.maxSpeed = (r._mods._prev.maxSpeed || 0) * 1.05; r.acc = (r._mods._prev.acc || 0); } else { r.maxSpeed = (r.maxSpeed || 0) * 1.05; } } else { r.maxSpeed = (r.maxSpeed || 0) * 0.95; } },
 	  remove: (r) => { if (!r._mods || !r._mods.RainyDays) return; if (typeof r._mods.RainyDays.prev === "number") r.maxSpeed = r._mods.RainyDays.prev; if (typeof r._mods.RainyDays.prevAcc === "number") r.acc = r._mods.RainyDays.prevAcc; delete r._mods.RainyDays; delete r._mods.RainyDaysActive; }
 	},
-	{id: "Firm Conditions", cost: 100, desc: "",
+	{id: "Firm Conditions", cost: 100, desc: "Increase performance in firm tracks.",
 	  condition: (rs,p) => { if (!rs||!p) return false; return rs.track === "Firm"; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.FirmConditionsActive) return; r._mods.FirmConditionsActive = true; r._mods.FirmConditions = r._mods.FirmConditions || {}; r._mods.FirmConditions.prev = r.maxSpeed || 0; r.maxSpeed = (r.maxSpeed || 0) * 1.05; },
 	  remove: (r) => { if (!r._mods || !r._mods.FirmConditions) return; if (typeof r._mods.FirmConditions.prev === "number") r.maxSpeed = r._mods.FirmConditions.prev; delete r._mods.FirmConditions; delete r._mods.FirmConditionsActive; }
 	},
-	{id: "Wet Conditions", cost: 100, desc: "",
+	{id: "Wet Conditions", cost: 100, desc: "Increase performance in softer tracks.",
 	  condition: (rs,p) => { if (!rs||!p) return false; return rs.track === "Good" || rs.track === "Wet"; },
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.WetConditionsActive) return; r._mods.WetConditionsActive = true; r._mods.WetConditions = r._mods.WetConditions || {}; r._mods.WetConditions.prev = r.maxSpeed || 0; r.maxSpeed = (r.maxSpeed || 0) * 1.10; },
 	  remove: (r) => { if (!r._mods || !r._mods.WetConditions) return; if (typeof r._mods.WetConditions.prev === "number") r.maxSpeed = r._mods.WetConditions.prev; delete r._mods.WetConditions; delete r._mods.WetConditionsActive; }
@@ -923,191 +931,110 @@ const ABILITIES = {
 	  apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.Concentrate){ r._mods.Concentrate = { chanceMultiplier: 0.0, lateStartDelayMultiplier: 0.0 }; } else { r._mods.Concentrate.chanceMultiplier = 0.0; r._mods.Concentrate.lateStartDelayMultiplier = 0.0; } },
 	  remove: (r, rs) => { if(r && r._mods && r._mods.Concentrate) try{ delete r._mods.Concentrate; }catch(e){} }
 	},
-    {id:"Competitive", cost:100, desc: "",
-      condition:(rs,p)=> { let near = 0; for(const o of rs.field) if(o!==p && Math.abs(o.pos - p.pos)/Math.max(1, rs.race.distance) <= 0.03) near++; return near >= 2; },
-      apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Competitive){ r._mods.Competitive = {ms:r.maxSpeed*0.10,expires: rs.time + 5}; r.maxSpeed += r._mods.Competitive.ms; } },
-      remove:(r)=>{ if(r._mods && r._mods.Competitive){ r.maxSpeed -= r._mods.Competitive.ms; delete r._mods.Competitive; } }
-    },
-    {id:"Patience Is Key", cost:100, desc: "",
-      condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>2 && pct>=26; },
-      apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Patience){ r._mods.Patience = {ms:r.maxSpeed*0.05,ac:r.acc*0.05}; r.maxSpeed += r._mods.Patience.ms; r.acc += r._mods.Patience.ac; } },
-      remove:(r)=>{ if(r._mods && r._mods.Patience){ r.maxSpeed -= r._mods.Patience.ms; r.acc -= r._mods.Patience.ac; delete r._mods.Patience; } }
-    },
-    {id:"Confidence", cost:100, desc: "",
+	{id: "Preferred Position", cost: 150, desc: "Gain a boost in performance if you're in a preferred position.",
+	  condition: (rs, p) => { if (!rs || !p) { return false; let progress = null; } if (typeof rs.progress === "number") { progress = rs.progress; } else if (typeof rs.race === "object" && typeof p.pos === "number" && rs.race.distance > 0) { progress = p.pos / rs.race.distance; } if (progress === null || progress < 0.5) { return false; const uq = (state && state.abilities && state.abilities.equippedUnique) ? state.abilities.equippedUnique : null; } if (!uq) { return false; const rank = getCurrentRank(rs, p); const total = (rs.field || []).length || 1; } if (uq === "Front Runner") { return rank >= 1 && rank <= 3; } if (uq === "Pace Chaser") { const threshold = Math.ceil(total / 2); return rank <= threshold; } if (uq === "Late Surger") { const threshold = Math.ceil(total / 2); return rank > threshold; } if (uq === "End Closer") { const threshold = Math.ceil(total * 0.75); return rank > threshold; } return false; },
+	  apply: (r, rs) => { r._mods = r._mods || {}; if (r._mods.PreferredPosition) return; const ms = (r.minSpeed || 0) * 0.05; const mS = (r.maxSpeed || 0) * 0.05; const ac = (r.acc || 0) * 0.05; const regen = (r.regenPerTick || 0.1) * 0.05; r._mods.PreferredPosition = { ms, ac, regen }; r.minSpeed = (r.minSpeed || 0) + ms; r.maxSpeed = (r.maxSpeed || 0) + mS; r.acc = (r.acc || 0) + ac; r.regenPerTick = (r.regenPerTick || 0) + regen; },
+	  remove: (r) => { if (!r._mods || !r._mods.PreferredPosition) return; const m = r._mods.PreferredPosition; if (typeof m.ms === "number" && typeof r.minSpeed === "number") r.minSpeed = Math.max(0, r.minSpeed - m.ms); if (typeof m.mS === "number" && typeof r.maxSpeed === "number") r.maxSpeed = Math.max(0, r.maxSpeed - m.mS); if (typeof m.ac === "number" && typeof r.acc === "number") r.acc = Math.max(0, r.acc - m.ac); if (typeof m.regen === "number" && typeof r.regenPerTick === "number") r.regenPerTick = Math.max(0, r.regenPerTick - m.regen); delete r._mods.PreferredPosition; }
+	},
+	{id: "Left-Handed", cost: 80, desc: "Increase performance in left-handed tracks.",
+	  condition: (rs, p) => !!rs && rs.race && rs.race.direction === "Left",
+	  apply: (r, rs) => { r._mods = r._mods || {}; if (!r._mods.LeftHanded) { r._mods.LeftHanded = { min: (r.minSpeed || 0) * 0.05, max: (r.maxSpeed || 0) * 0.05 }; r.minSpeed = (r.minSpeed || 0) + r._mods.LeftHanded.min; r.maxSpeed = (r.maxSpeed || 0) + r._mods.LeftHanded.max; } },
+	  remove: (r) => { if (r._mods && r._mods.LeftHanded) { r.minSpeed = Math.max(0, (r.minSpeed || 0) - (r._mods.LeftHanded.min || 0)); r.maxSpeed = Math.max(0, (r.maxSpeed || 0) - (r._mods.LeftHanded.max || 0)); delete r._mods.LeftHanded; } }
+	},
+	{id: "Right-Handed", cost: 80, desc: "Increase performance in right-handed tracks.",
+	  condition: (rs, p) => !!rs && rs.race && rs.race.direction === "Right",
+	  apply: (r, rs) => { r._mods = r._mods || {}; if (!r._mods.RightHanded) { r._mods.RightHanded = { min: (r.minSpeed || 0) * 0.05, max: (r.maxSpeed || 0) * 0.05 }; r.minSpeed = (r.minSpeed || 0) + r._mods.RightHanded.min; r.maxSpeed = (r.maxSpeed || 0) + r._mods.RightHanded.max; } },
+	  remove: (r) => { if (r._mods && r._mods.RightHanded) { r.minSpeed = Math.max(0, (r.minSpeed || 0) - (r._mods.RightHanded.min || 0)); r.maxSpeed = Math.max(0, (r.maxSpeed || 0) - (r._mods.RightHanded.max || 0)); delete r._mods.RightHanded; } }
+	},
+    {id:"Confidence", cost:100, desc: "Regenerate stamina when in a good position.",
       condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank<=3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.ConfidenceUsed) { const __st = (r.staminaMax * 0.5) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.ConfidenceUsed = true; } },
       remove:(r)=>{}
     },
-    {id:"Iron Will", cost:100, desc: "",
+    {id:"Iron Will", cost:100, desc: "Gather enough willpower to regenerate a moderate amount of stamina.",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.IronWillUsed){ const __st = (r.staminaMax * 0.6) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.IronWillUsed=true; } },
       remove:(r)=>{}
     },
-    {id:"Cool Down", cost:100, desc: "",
-      condition:(rs,p)=> false,
-      apply:(r,rs)=>{},
-      remove:(r)=>{}
-    },
-    {id:"Breath of Fresh Air", cost:100, desc: "",
+    {id:"Breath of Fresh Air", cost:100, desc: "Calm down mid-race to regenerate stamina.",
       condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank<=3 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.BreathUsed){ const __st = (r.staminaMax * 0.4) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.BreathUsed=true; } },
       remove:(r)=>{}
     },
-    {id:"Unchanging", cost:100, desc: "",
+	{id:"Cool Down", cost:200, desc: "Calm down mid-race to regenerate a moderate amount of stamina.",
+      condition:(rs,p)=> false,
+      apply:(r,rs)=>{},
+      remove:(r)=>{}
+    },
+	{id:"Patience Is Key", cost:100, desc: "Increase performance if current performance as not changed.",
+      condition:(rs,p)=> { const rank = getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>2 && pct>=26; },
+      apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Patience){ r._mods.Patience = {ms:r.maxSpeed*0.05,ac:r.acc*0.05}; r.maxSpeed += r._mods.Patience.ms; r.acc += r._mods.Patience.ac; } },
+      remove:(r)=>{ if(r._mods && r._mods.Patience){ r.maxSpeed -= r._mods.Patience.ms; r.acc -= r._mods.Patience.ac; delete r._mods.Patience; } }
+    },
+    {id:"Unchanging", cost:100, desc: "Regenerate stamina if current performance has not changed.",
       condition:(rs,p)=> { const pct=(p.pos/rs.race.distance)*100; return (p.startRank === getCurrentRank(rs,p)) && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.UnchangingUsed){ const __st = (r.staminaMax * 0.5) * _witsEffectMult(); r.stamina = clamp(r.stamina + __st, 0, r.staminaMax); r._mods.UnchangingUsed=true; } },
       remove:(r)=>{}
     },
-    {id: "Oh No You Don’t!", cost: 100, desc: "",
+	{id:"Competitive", cost:100, desc: "Greatly increase velocity when competing against an opponent.",
+      condition:(rs,p)=> { let near = 0; for(const o of rs.field) if(o!==p && Math.abs(o.pos - p.pos)/Math.max(1, rs.race.distance) <= 0.03) near++; return near >= 2; },
+      apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Competitive){ r._mods.Competitive = {ms:r.maxSpeed*0.10,expires: rs.time + 5}; r.maxSpeed += r._mods.Competitive.ms; } },
+      remove:(r)=>{ if(r._mods && r._mods.Competitive){ r.maxSpeed -= r._mods.Competitive.ms; delete r._mods.Competitive; } }
+    },
+    {id: "Oh No You Don’t!", cost: 100, desc: "Increase performance when competing against an opponent.",
 	  condition: (rs,p) => false,
 	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.OhNoYouDontActive) return; let progress = null; if (typeof rs.progress === 'number') progress = rs.progress; else if (typeof rs.distance === 'number' && typeof r.distance === 'number' && rs.distance > 0) progress = r.distance / rs.distance; if (progress === null || progress < 0.5) return; const amount = 0.10; r._mods.OhNoYouDontActive = true; r._mods.OhNoYouDont = r._mods.OhNoYouDont || {}; r._mods.OhNoYouDont.prevMaxSpeed = r.maxSpeed || 0; r._mods.OhNoYouDont.amount = amount; r.maxSpeed = (r.maxSpeed || 0) * (1 + amount); try { r._mods.OhNoYouDont.expires = (rs.time !== undefined) ? (rs.time + 5) : (Date.now()/1000 + 5); } catch(e) { r._mods.OhNoYouDont.expires = Date.now()/1000 + 5; }
 	  },
 	  remove: (r) => { if (!r._mods || !r._mods.OhNoYouDont) return; if (typeof r._mods.OhNoYouDont.prevMaxSpeed === 'number') r.maxSpeed = r._mods.OhNoYouDont.prevMaxSpeed; delete r._mods.OhNoYouDont; delete r._mods.OhNoYouDontActive;
 	  }
 	},
-	{id: "It’s On!", cost: 100, desc: "",
+	{id: "It’s On!", cost: 100, desc: "Regenerate stamina when competing against an opponent.",
 	  condition: (rs,p) => false,
-	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.ItsOnUsed) return; let progress = null; if (typeof rs.progress === 'number') progress = rs.progress; else if (typeof rs.distance === 'number' && typeof r.distance === 'number' && rs.distance > 0) progress = r.distance / rs.distance; if (progress === null || progress < 0.5) return; const amount = 0.60; const addStamina = (r.staminaMax || 0) * amount; r.stamina = clamp((r.stamina || 0) + addStamina, 0, r.staminaMax || ((r.stamina || 0) + addStamina)); r._mods.ItsOnUsed = true;
-	  },
-	  remove: (r) => { if (!r._mods) return; delete r._mods.ItsOnUsed;
-	  }
+	  apply: (r,rs) => { r._mods = r._mods || {}; if (r._mods.ItsOnUsed) return; let progress = null; if (typeof rs.progress === 'number') progress = rs.progress; else if (typeof rs.distance === 'number' && typeof r.distance === 'number' && rs.distance > 0) progress = r.distance / rs.distance; if (progress === null || progress < 0.5) return; const amount = 0.60; const addStamina = (r.staminaMax || 0) * amount; r.stamina = clamp((r.stamina || 0) + addStamina, 0, r.staminaMax || ((r.stamina || 0) + addStamina)); r._mods.ItsOnUsed = true; },
+	  remove: (r) => { if (!r._mods) return; delete r._mods.ItsOnUsed; }
 	},
-    {id:"I Understand It Now", cost:150, desc: "",
+    {id:"I Understand It Now", cost:150, desc: "Read your opponents and mimic their actions for far greater performance",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return (rank===2||rank===3) && pct>=26; },
-      apply:(r,rs)=>{
-        const sorted = [...rs.field].sort((a,b)=>b.pos-a.pos);
-        const rank = getCurrentRank(rs,r);
-        const ahead = sorted[rank-2];
-        if(ahead && !r._mods.CopySpeed){ r._mods.CopySpeed={acc:r.acc,ms:r.maxSpeed}; r.acc = ahead.acc; r.maxSpeed = ahead.maxSpeed; }
-      },
+      apply:(r,rs)=>{ const sorted = [...rs.field].sort((a,b)=>b.pos-a.pos); const rank = getCurrentRank(rs,r); const ahead = sorted[rank-2]; if(ahead && !r._mods.CopySpeed){ r._mods.CopySpeed={acc:r.acc,ms:r.maxSpeed}; r.acc = ahead.acc; r.maxSpeed = ahead.maxSpeed; } },
       remove:(r)=>{ if(r._mods && r._mods.CopySpeed){ r.acc = r._mods.CopySpeed.acc; r.maxSpeed = r._mods.CopySpeed.ms; delete r._mods.CopySpeed; } }
     },
-    {id:"Aura", cost:150, desc: "",
+    {id:"Aura", cost:150, desc: "Intimidate opponents to hinder them mid-race.",
       condition:(rs,p)=> { const rank=getCurrentRank(rs,p); const pct=(p.pos/rs.race.distance)*100; return rank>=6 && pct>=26; },
       apply:(r,rs)=>{ r._mods=r._mods||{}; if(!r._mods.Aura){ r._mods.Aura={ms:r.maxSpeed*0.5,ac:r.acc*0.5,expires:rs.time+5}; r.maxSpeed += r._mods.Aura.ms; r.acc += r._mods.Aura.ac; } },
       remove:(r)=>{ if(r._mods && r._mods.Aura){ r.maxSpeed -= r._mods.Aura.ms; r.acc -= r._mods.Aura.ac; delete r._mods.Aura; } },
     }
   ],
   uniques: [
-    {
-      id: "End Closer",
-      cost: 50,
-      desc: "Conserve energy for a powerful burst in the final stretch.",
+    {id: "End Closer", cost: 50, desc: "Conserve energy for a powerful burst in the final stretch.",
       condition: (rs, p) => !!rs && !!p,
-      apply: (r, rs) => {
-        r._mods = r._mods || {};
-        // snapshot prev values once
-        if(!r._mods.EndCloser) r._mods.EndCloser = { prevMax: r.maxSpeed, prevAcc: r.acc, prevRegen: r.regenPerTick };
-        const baseMax = (r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.EndCloser.prevMax || r.maxSpeed;
-        const baseAcc = (r._mods && r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.EndCloser.prevAcc || r.acc;
-        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
-        if(pct < 90){
-          // conservative phase
-          r.maxSpeed = (baseMax || 0) * 0.96;
-          r.acc = (baseAcc || 0) * 0.96;
-          r._mods.EndCloser.dmult = 0.95; // lower drain (will be respected by the drain loop)
-        } else {
-          // final 10% spike
-          r.maxSpeed = (baseMax || 0) * 1.15;
-          r.acc = (baseAcc || 0) * 1.20;
-          r._mods.EndCloser.dmult = 0.67; // much lower drain on final sprint
-        }
-      },
-      remove: (r) => {
-        if(!r._mods || !r._mods.EndCloser) return;
-        if(typeof r._mods.EndCloser.prevMax === 'number') r.maxSpeed = r._mods.EndCloser.prevMax;
-        if(typeof r._mods.EndCloser.prevAcc === 'number') r.acc = r._mods.EndCloser.prevAcc;
-        if(typeof r._mods.EndCloser.prevRegen === 'number') r.regenPerTick = r._mods.EndCloser.prevRegen;
-        delete r._mods.EndCloser;
-      }
-    },
-
-    {
-      id: "Late Surger",
-      cost: 50,
-      desc: "Conserve energy for boost in performance in the second half of the race.",
+      apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.EndCloser) r._mods.EndCloser = { prevMax: r.maxSpeed, prevAcc: r.acc, prevRegen: r.regenPerTick }; const baseMax = (r._mods && r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.EndCloser.prevMax || r.maxSpeed; const baseAcc = (r._mods && r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.EndCloser.prevAcc || r.acc; const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100; if(pct < 90){ r.maxSpeed = (baseMax || 0) * 0.96; r.acc = (baseAcc || 0) * 0.96; r._mods.EndCloser.dmult = 0.95; } else { r.maxSpeed = (baseMax || 0) * 1.15; r.acc = (baseAcc || 0) * 1.20; r._mods.EndCloser.dmult = 0.67; } },
+      remove: (r) => { if(!r._mods || !r._mods.EndCloser) { return; } if(typeof r._mods.EndCloser.prevMax === 'number') { r.maxSpeed = r._mods.EndCloser.prevMax; } if(typeof r._mods.EndCloser.prevAcc === 'number') { r.acc = r._mods.EndCloser.prevAcc; } if(typeof r._mods.EndCloser.prevRegen === 'number') { r.regenPerTick = r._mods.EndCloser.prevRegen; } delete r._mods.EndCloser; } },
+    {id: "Late Surger", cost: 50, desc: "Conserve energy for boost in performance in the second half of the race.",
       condition: (rs, p) => !!rs && !!p,
-      apply: (r, rs) => {
-        r._mods = r._mods || {};
-        if(!r._mods.LateSurger) r._mods.LateSurger = { prevMax: r.maxSpeed, prevAcc: r.acc };
-        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.LateSurger.prevMax || r.maxSpeed;
-        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.LateSurger.prevAcc || r.acc;
-        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
-        if(pct >= 75){
-          r.maxSpeed = (baseMax || 0) * 1.08;
-          r.acc = (baseAcc || 0) * 1.08;
-        } else {
-          // keep previous (remove will revert)
-          if(r._mods.LateSurger && r._mods.LateSurger._inactive) { /* noop */ }
-        }
-      },
-      remove: (r) => {
-        if(!r._mods || !r._mods.LateSurger) return;
-        if(typeof r._mods.LateSurger.prevMax === 'number') r.maxSpeed = r._mods.LateSurger.prevMax;
-        if(typeof r._mods.LateSurger.prevAcc === 'number') r.acc = r._mods.LateSurger.prevAcc;
-        delete r._mods.LateSurger;
-      }
+      apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.LateSurger) { r._mods.LateSurger = { prevMax: r.maxSpeed, prevAcc: r.acc }; } const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.LateSurger.prevMax || r.maxSpeed; const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.LateSurger.prevAcc || r.acc; const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100; if(pct >= 75){ r.maxSpeed = (baseMax || 0) * 1.08; r.acc = (baseAcc || 0) * 1.08; } else { if(r._mods.LateSurger && r._mods.LateSurger._inactive) { /* noop */ } } },
+      remove: (r) => { if(!r._mods || !r._mods.LateSurger) { return; } if(typeof r._mods.LateSurger.prevMax === 'number') { r.maxSpeed = r._mods.LateSurger.prevMax; } if(typeof r._mods.LateSurger.prevAcc === 'number') { r.acc = r._mods.LateSurger.prevAcc; } delete r._mods.LateSurger; }
     },
-
-    {
-      id: "Pace Chaser",
-      cost: 50,
-      desc: "Keeps you nice and steady for the whole race.",
+    {id: "Pace Chaser", cost: 50, desc: "Keeps you nice and steady for the whole race.",
       condition: (rs,p) => !!rs && !!p,
-      apply: (r, rs) => {
-        r._mods = r._mods || {};
-        if(!r._mods.PaceChaser) r._mods.PaceChaser = { prevMax: r.maxSpeed, prevAcc: r.acc };
-        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.PaceChaser.prevMax || r.maxSpeed;
-        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.PaceChaser.prevAcc || r.acc;
-        const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100;
-        if(pct >= 75){
-          r.maxSpeed = (baseMax || 0) * 1.05;
-          r.acc = (baseAcc || 0) * 1.05;
-        } else if(pct >= 25){
-          r.maxSpeed = (baseMax || 0) * 1.02;
-          r.acc = (baseAcc || 0) * 1.02;
-        }
-      },
-      remove: (r) => {
-        if(!r._mods || !r._mods.PaceChaser) return;
-        if(typeof r._mods.PaceChaser.prevMax === 'number') r.maxSpeed = r._mods.PaceChaser.prevMax;
-        if(typeof r._mods.PaceChaser.prevAcc === 'number') r.acc = r._mods.PaceChaser.prevAcc;
-        delete r._mods.PaceChaser;
-      }
+      apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.PaceChaser) { r._mods.PaceChaser = { prevMax: r.maxSpeed, prevAcc: r.acc }; } const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.PaceChaser.prevMax || r.maxSpeed; const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.PaceChaser.prevAcc || r.acc; const pct = ((r.pos || 0) / (rs.race.distance || 1)) * 100; if(pct >= 75){ r.maxSpeed = (baseMax || 0) * 1.05; r.acc = (baseAcc || 0) * 1.05; } else if(pct >= 25){ r.maxSpeed = (baseMax || 0) * 1.02; r.acc = (baseAcc || 0) * 1.02; } },
+      remove: (r) => { if(!r._mods || !r._mods.PaceChaser) return; if(typeof r._mods.PaceChaser.prevMax === 'number') r.maxSpeed = r._mods.PaceChaser.prevMax; if(typeof r._mods.PaceChaser.prevAcc === 'number') r.acc = r._mods.PaceChaser.prevAcc; delete r._mods.PaceChaser; }
     },
-
-    {
-      id: "Front Runner",
-      cost: 50,
-      desc: "Put in maximum effort to keep the lead for the whole race.",
+    {id: "Front Runner", cost: 50, desc: "Put in maximum effort to keep the lead for the whole race.",
       condition: (rs,p) => !!rs && !!p,
-      apply: (r, rs) => {
-        r._mods = r._mods || {};
-        if(!r._mods.FrontRunner) r._mods.FrontRunner = { prevMax: r.maxSpeed, prevAcc: r.acc, dm: 1.05 };
-        const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.FrontRunner.prevMax || r.maxSpeed;
-        const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.FrontRunner.prevAcc || r.acc;
-        r.maxSpeed = (baseMax || 0) * 1.05;
-        r.acc = (baseAcc || 0) * 1.05;
-        r._mods.FrontRunner.dmult = 1.05; // increases stamina drain by 5%
-      },
-      remove: (r) => {
-        if(!r._mods || !r._mods.FrontRunner) return;
-        if(typeof r._mods.FrontRunner.prevMax === 'number') r.maxSpeed = r._mods.FrontRunner.prevMax;
-        if(typeof r._mods.FrontRunner.prevAcc === 'number') r.acc = r._mods.FrontRunner.prevAcc;
-        delete r._mods.FrontRunner;
-      }
+      apply: (r, rs) => { r._mods = r._mods || {}; if(!r._mods.FrontRunner) { r._mods.FrontRunner = { prevMax: r.maxSpeed, prevAcc: r.acc, dm: 1.05 }; } const baseMax = (r._mods._prev && typeof r._mods._prev.maxSpeed === 'number') ? r._mods._prev.maxSpeed : r._mods.FrontRunner.prevMax || r.maxSpeed; const baseAcc = (r._mods._prev && typeof r._mods._prev.acc === 'number') ? r._mods._prev.acc : r._mods.FrontRunner.prevAcc || r.acc; r.maxSpeed = (baseMax || 0) * 1.05; r.acc = (baseAcc || 0) * 1.05; r._mods.FrontRunner.dmult = 1.05; },
+      remove: (r) => { if(!r._mods || !r._mods.FrontRunner) { return; } if(typeof r._mods.FrontRunner.prevMax === 'number') { r.maxSpeed = r._mods.FrontRunner.prevMax; } if(typeof r._mods.FrontRunner.prevAcc === 'number') { r.acc = r._mods.FrontRunner.prevAcc; } delete r._mods.FrontRunner; }
     }
   ],
   actives: [
-    {id:"Plus Ultra!", cost:150, desc: "",fn:"plusUltra"},
-    {id:"No… Not Yet!", cost:150, desc: "", fn:"regen70"},
-    {id:"I Am Not Giving Up Now!", cost:200, desc: "", fn:"comeback"},
-    {id:"Plan B", cost:150, desc: "", fn:"planB"},
-    {id:"Triumphant Pulse", cost:200, desc: "", fn:"triumph"},
-	{id:"Red Shift", cost:200, desc: "", fn:"redshift"},
-	{id:"Swinging Maestro", cost:200, desc: "", fn:"swing"},
-    {id:"Must Go Even Further Beyond!", cost:200, desc: "", fn:"furtherBeyond"},
-    {id:"Gotcha!", cost:150, desc: "", fn:"gotcha"}
+    {id:"Plus Ultra!", cost:150, desc: "Push past your limits and go beyond, Plus Ultra!", fn:"plusUltra"},
+    {id:"No… Not Yet!", cost:150, desc: "With sheer willpower, regenerate majority of stamina for one last push.", fn:"regen70"},
+    {id:"I Am Not Giving Up Now!", cost:200, desc: "If position is terrible, with sheer willpower, increase performance greatly for one last push.", fn:"comeback"},
+    {id:"Plan B", cost:150, desc: "If position is bad, switch up your strategy and increase performance greatly.", fn:"planB"},
+    {id:"Triumphant Pulse", cost:200, desc: "Break through the pack and charge in a powerful burst of speed and power.", fn:"triumph"},
+	{id:"Red Shift", cost:200, desc: "Shift gears and overtake opponents in a great increase of power.", fn:"redshift"},
+	{id:"Swinging Maestro", cost:200, desc: "Regenerate stamina and greatly increase performance during the turning point.", fn:"swing"},
+    {id:"Must Go Even Further Beyond!", cost:200, desc: "Maintain your position and increase performance if 1st place.", fn:"furtherBeyond"},
+    {id:"Gotcha!", cost:150, desc: "Play tag with forefront umas, tag them to gain an increase in performance.", fn:"gotcha"}
   ]
 };
 
@@ -1184,7 +1111,7 @@ function populateRaces(){
 	} else {
 	  dist = ""
 	}
-    opt.textContent = `${r.id} [${r.grade}] - Track: ${r.track} -  Distance: ${r.distance}m${dist} ${disabled? "(Locked)" : ""}`;
+    opt.textContent = `${r.id} [${r.grade}] - Track: ${r.track} - Direction: ${r.direction || 'Right'} -  Distance: ${r.distance}m${dist} ${disabled? "(Locked)" : ""}`;
 	opt.style.border="1px solid black";
     if(disabled) opt.disabled = true;
     sel.appendChild(opt);
@@ -1596,13 +1523,30 @@ function renderAbilitiesShop(){
   }));
 
   wrap.querySelectorAll("button[data-equip]").forEach(b=>b.addEventListener("click", ()=>{
-    const id=b.dataset.equip;
-    if(state.abilities.equippedPassives.includes(id)) state.abilities.equippedPassives = state.abilities.equippedPassives.filter(x=>x!==id);
-    else {
-      if(state.abilities.equippedPassives.length >= 6){ alert("Max 6 passives"); return; }
+	const id = b.dataset.equip;
+	if (!id) return;
+
+	if (state.abilities.equippedPassives.includes(id)) {
+      // unequip
+      state.abilities.equippedPassives = state.abilities.equippedPassives.filter(x=>x!==id);
+	} else {
+      // limit check
+      if (state.abilities.equippedPassives.length >= 6) { alert("Max 6 passives"); return; }
+
+      // conflict check: see PASSIVE_CONFLICT_GROUPS
+      const conflicts = PASSIVE_CONFLICT_GROUPS
+      .filter(g => g.includes(id))
+      .flatMap(g => g.filter(x => x !== id && state.abilities.equippedPassives.includes(x)));
+
+	  if (conflicts.length) {
+		alert(`Cannot equip "${id}" while the following passive(s) are equipped: ${conflicts.join(', ')}.`);
+		return;
+      }
+
+      // no conflict -> equip
       state.abilities.equippedPassives.push(id);
-    }
-    saveState(); refreshPlayerUI();
+	}
+  saveState(); refreshPlayerUI();
   }));
 
   wrap.querySelectorAll("button[data-buy-active]").forEach(b=>b.addEventListener("click", ()=>{
@@ -1845,7 +1789,7 @@ let commentaryHandle = null;
 function derivePlayerValues(stats){
   const maxSpeed = Math.max(11.1, 13.4 + (stats.Speed - 100)*0.0065);
   const staminaMax = 140 + (stats.Stamina - 100)*0.355;
-  const acc = 6 + (stats.Power - 100)*0.00425;
+  const acc = 3 + (stats.Power - 100)*0.002125;
   const regenPerTick = 0.06 + (stats.Guts - 100)*0.00015;
   const gutsVal = stats.guts ?? stats.Guts ?? stats.GUTS ?? 100;
   const minSpeed = gutsToMinSpeed(gutsVal);
@@ -2195,7 +2139,7 @@ function renderRaceInfo(r){
   else if (r.distance > 2000 && r.distance <= 5000) dist = " (Long)";
   else if (r.distance > 5000) dist = " (Very Long)";
 
-  el("raceInfo").innerHTML = `<b>${r.id}</b><div class="small muted">${r.grade} • Track: ${r.track} • Distance: ${r.distance}m${dist} • Fans Watching: ${r.rewardFame}</div>`;
+  el("raceInfo").innerHTML = `<b>${r.id}</b><div class="small muted">${r.grade} • Track: ${r.track} • Direction: ${r.direction || 'Right'} • Distance: ${r.distance}m${dist} • Fans Watching: ${r.rewardFame}</div>`;
 }
 
 function renderRacersList(field, raceDistance){
@@ -2236,7 +2180,7 @@ function renderRacersList(field, raceDistance){
     const lateEl = document.getElementById("area_late_"+idTag);
     if(earlyEl && midEl && lateEl){
       const ePct = 25;
-      const mPct = 49; // 26-74 -> 49
+      const mPct = 49;
       const lPct = 26;
       earlyEl.style.width = ePct + "%";
       earlyEl.style.left = "0%";
@@ -2350,7 +2294,8 @@ function startRace(){
   r.lastAbilityUsed = 0;
   if(r._mods) delete r._mods.SpecialActivatedOnce;
 										}
-
+  const player = raceState.field.find(f=>f.isPlayer);
+  
   // NEW: assign late-starts (5% chance) for EVERY racer, and apply low-energy penalty to player if needed
   // Note: raceState.time is 0 here (race just started), so startsAt = 0.5
   for(const r of raceState.field){
@@ -2359,13 +2304,14 @@ function startRace(){
       // mark with a LateStart mod; we'll check this in raceTick to block acceleration until startsAt
       r._mods = r._mods || {};
       r._mods.LateStart = { startsAt: raceState.time + LATE_START_DELAY };
-      // warn/log (user wanted id="warn")
-      addLog(`<div id="warn">${r.name} had a late start!</div>`);
+      if(raceState.isPlayer) {
+		addLog(`<div class="warn">${r.name} had a late start!</div>`);
+	  } else {
+		addLog(`<div>${r.name} had a late start!</div>`);
+	  }
     }
   }
 
-  // Low-energy acceleration penalty (player only) — if player's energy is low at race start
-  const player = raceState.field.find(f=>f.isPlayer);
   if(player){
     if(typeof state !== "undefined" && typeof state.energy === "number" && state.energy <= LOW_ENERGY_THRESHOLD){
       player._mods = player._mods || {};
@@ -2383,7 +2329,7 @@ function startRace(){
   
   try{ AudioManager.playRaceMusicFor(raceState.race); }catch(e){ console.warn("AudioManager race play failed", e); }
   
-  raceTickHandle = setInterval(()=>raceTick(0.005), 10);
+  raceTickHandle = setInterval(()=>raceTick(0.01), 10);
   commentaryHandle = setInterval(()=>raceCommentaryTick(), rand(500,1500));
 }
 
@@ -2435,7 +2381,7 @@ function raceTick(dt){
         r._mods.Rushed = { ms: ms, dmult: 4, expires: raceState.time + RUSH_DURATION };
         r.maxSpeed += ms;
         if(r.isPlayer) addLog(`<div class="warn">Looks like ${r.name} feels a bit RUSHED there!</div>`);
-        else addLog(`<div class="warn">Looks like ${r.name}'s a little RUSHED there!</div>`);
+        else addLog(`<div>Looks like ${r.name}'s a little RUSHED there!</div>`);
         setTimeout(()=>{ if(r._mods && r._mods.Rushed){ r.maxSpeed -= r._mods.Rushed.ms; delete r._mods.Rushed; } }, RUSH_DURATION*1000);
       }
     }
@@ -2473,7 +2419,11 @@ function raceTick(dt){
     if(r.stamina <= 0 && !r.exhausted){
       r.exhausted = true;
       r.speed = Math.min(r.speed, (r.minSpeed || 11.1));
-      addLog(`Oh and it looks like ${r.name} has ran out of stamina!`);
+	  if(r.isPlayer) {
+		addLog(`<div class="warn">Oh and it looks like ${r.name} has ran out of stamina!<div>`);
+	  } else {
+		addLog(`Oh and it looks like ${r.name} has ran out of stamina!`);
+	  }
       // Cool Down passive when hitting 0: if player has it
       if(r.isPlayer && state.abilities.equippedPassives.includes("Cool Down")){
         r.stamina = clamp(r.stamina + r.staminaMax*0.4, 0, r.staminaMax);
@@ -3097,6 +3047,8 @@ function useActiveById(id){
       if(!player.reachedMiddle) return;
       const ms = player.maxSpeed * 0.12;
       const ac = player.acc * 0.12;
+	  const __st = (r.staminaMax * 0.5) * _witsEffectMult();
+	  r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
       player._mods.swing = { ms, ac, expires: raceState.time + 9 };
 	  try{ _applyWitsScalingToMod(r._mods.swing); }catch(e){}
       player.maxSpeed += ms; player.acc += ac;
@@ -3106,7 +3058,7 @@ function useActiveById(id){
   } else if(a.fn === "furtherBeyond"){
     const rank = getCurrentRank(raceState, player);
     if(rank === 1){
-      const __st = (r.staminaMax * 0.05) * _witsEffectMult();
+      const __st = (r.staminaMax * 0.1) * _witsEffectMult();
 	  r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
       const ms = player.maxSpeed * 0.05; const ac = player.acc * 0.05;
       player._mods.Further = {ms,ac,expires: raceState.time + 4};
