@@ -3681,3 +3681,4 @@ const CLICK_LIFETIME_MS = 330;
     spawnClickEffect(t.clientX, t.clientY);
 
   }, { passive: true });
+
