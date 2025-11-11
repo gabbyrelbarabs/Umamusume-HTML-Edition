@@ -3150,7 +3150,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   el("manualSaveBtn").style.border="1.6px solid white";
   el("manualSaveBtn").style.fontWeight="bold";
   el("restBtn").addEventListener("click", ()=>{
-	if(state.training.totalTrains >= 25){
+	if(state.training.totalTrains >= 30){
       state.training.locked = true;
       state.training.lockRaceCount = state.racesDone;
       alert(`It's Race Day. No time to rest!`);
@@ -3679,4 +3679,5 @@ const CLICK_LIFETIME_MS = 330;
     const t = ev.touches && ev.touches[0];
     if (!t) return;
     spawnClickEffect(t.clientX, t.clientY);
+
   }, { passive: true });
