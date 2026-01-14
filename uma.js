@@ -3682,3 +3682,10 @@ const CLICK_LIFETIME_MS = 330;
 
   }, { passive: true });
 
+//UPDATE NOTES:
+//add moods - major
+//fix active abilities
+//give all umas abilities - major
+//fix stat cap bug
+//limit races
+//balance training gains
