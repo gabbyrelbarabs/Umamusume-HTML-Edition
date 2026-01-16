@@ -1,4 +1,4 @@
--------------------------
+/* -------------------------
   Utilities
 ------------------------- */
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -4061,3 +4061,7 @@ const CLICK_LIFETIME_MS = 330;
     if (!t) return;
     spawnClickEffect(t.clientX, t.clientY);
   }, { passive: true });
+  
+//update notes:
+//fix training lock issue/s
+//add mood

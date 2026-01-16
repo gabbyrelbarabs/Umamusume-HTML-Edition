@@ -45,8 +45,22 @@
         <div id="playerTitle" class="title-badge">None</div>
       </div>
     </div>
+	
+	<hr/>
+	
+	<div class="small muted">Current Mood:</div>
+	<div>
+	  <div id="playerMood" class="mood-badge">Normal</div>
+	</div>
 
     <hr/>
+	
+	<div class="small muted">Conditions:</div>
+	<div>
+	  <div id="playerStatus" class="status-wrap"></div>
+	</div>
+	
+	<hr/>
 
     <div class="small muted">Stats:</div>
     <div id="statsGrid" class="stats-grid" style="margin-top:8px"></div>
@@ -69,7 +83,7 @@
           <button class="chip" data-stat="Wits">Wits</button>
         </div>
       </div>
-    </div>	
+    </div>
     <div style="margin-top:8px">
       <div class="small muted">Energy: <b id="energyVal">100</b></div>
       <div class="Bar"><i id="energyBar" style="width:100%"></i></div>
@@ -80,6 +94,16 @@
       <button id="restBtn" class="small-btn">Rest</button>
       <button id="manualSaveBtn" class="small-btn">Save</button>
     </div>
+	
+	<div id="restMenu" style="display:none;padding:10px;margin-top:8px;background:rgba(0,0,0,0.02);border:1px solid rgba(255,255,255,0.03)">
+	  <div class="small muted" style="margin-bottom:6px">Choose rest option</div>
+	  <div style="display:flex;gap:6px">
+		<button id="restSleepBtn" class="small-btn">Sleep</button>
+		<button id="restRecreateBtn" class="small-btn">Recreation (-10 SP)</button>
+		<button id="restInfirmBtn" class="small-btn">Infirmary (-5 SP)</button>
+		<button id="restCancelBtn" class="small-btn">Cancel</button>
+	  </div>
+	</div>
 
     <hr/>
 
