@@ -1,4 +1,4 @@
-/* -------------------------
+-------------------------
   Utilities
 ------------------------- */
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -17,13 +17,8 @@ function getStatCapForEntity(entity){
   return BASE_STAT_CAP * getEntityTier(entity);
 }
 function getEffectiveStatCapForPlayer(p) {
-  const base = (BASE_STAT_CAP || 1200) * (state.statTier || 1);
-  let countMaxed = 0;
-  if (!p || !p.stats) return base;
-  for (const k of Object.keys(p.stats)) {
-    if (p.stats[k] >= base) countMaxed++;
-  }
-  return base - (countMaxed * 200);
+  // Always return base stat cap (no penalties for other stats being maxed)
+  return (BASE_STAT_CAP || 1200) * (state.statTier || 1);
 }
 
 function gutsToMinSpeed(guts) {
@@ -402,33 +397,72 @@ const OPPONENTS = {
 };
 
 const OPPONENTS_THAT_CAN_BE_RUSHED = [
-  "Gold Ship",
-  "Mejiro McQueen",
-  "Tokai Teio",
-  "Kitasan Black",
+// meaning has ability
+
+  "Gold Ship",//
+  "Mejiro McQueen",//
+  "Tokai Teio",//
+  "Kitasan Black",//
   "Satono Diamond",
   "Grass Wonder",
-  "Haru Urara",
-  "Oguri Cap",
-  "Tamamo Cross",
-  "Sakura Bakushin O",
-  "Special Week",
-  "Symboli Rudolf",
-  "Rice Shower",
-  "Agnes Tachyon",
+  "Haru Urara",//
+  "Oguri Cap",//
+  "Tamamo Cross",//
+  "Sakura Bakushin O",//
+  "Special Week",//
+  "Symboli Rudolf",//
+  "Rice Shower",//
+  "Agnes Tachyon",//
   "Silence Suzuka",
   "King Halo",
-  "T.M. Opera O",
-  "Mihono Bourbon",
-  "Super Creek",
+  "T.M. Opera O",//
+  "Mihono Bourbon",//
+  "Super Creek",//
   "Winning Ticket",
   "Hishi Amazon",
-  "Still In Love",
+  "Still In Love",//
   "Stay Gold",
   "Orfevre",
-  "Maruzensky",
-  "Daiwa Scarlet",
-  "Vodka",
+  "Fenomeno",//
+  
+  //not added yet
+  "Nakayama Festa",
+  "Dream Journey",
+  "Narita Brian",
+  "Mejiro Ryan",
+  "Inari One",
+  "Symboli Kris S",
+  "Sirius Symboli",
+  "Nice Nature",
+  "Matikanefukukitaru",
+  "Hishi Akebono",
+  "Fuji Kiseki",
+  "Calstone Light O",
+  "Aston Machan",
+  "Sakura Chiyono O",
+  "Mayano Top Gun",
+  "Manhattan Cafe",
+  "Jungle Pocket",
+  "Loves Only You",
+  "El Condor Pasa",
+  "Daituku Helios",
+  "Daiichi Ruby",
+  "Agnes Digital",
+  "Air Groove",
+  "Fine Motion",
+  "Curren Chan",
+  "Smart Falcon",
+  "Zenno Rob Roy",
+  "Tosen Jordan",
+  "Narita Taishin",
+  "Nishino Flower",
+  "Marvelous Sunday",
+  "Mejiro Dober",
+  "Twin Turbo",
+  
+  "Maruzensky",//
+  "Daiwa Scarlet",//
+  "Vodka",//
   "Matikanetannhauser",
   "Meisho Doto",
   "Taiki Shuttle",
@@ -768,19 +802,6 @@ const OPPONENT_SPECIALS = {
       setTimeout(()=>{ if(r._mods && r._mods.Fenomeno){ r.maxSpeed -= r._mods.Fenomeno.ms; r.acc -= r._mods.Fenomeno.ac; delete r._mods.Fenomeno; } }, 10000);
     }
   },
-  "Fenomeno": {
-    id: "Target Acquired!",
-    chance: 0.002, minPct: 40,
-    activate: (r, rs) => {
-      if(r._mods && r._mods.Fenomeno) return;
-      r._mods = r._mods || {};
-      const ms = r.maxSpeed * 0.1;
-      r._mods.Fenomeno = { ms, expires: rs.time + 10 };
-      r.maxSpeed += ms; r.acc += ac;
-      addLog(`<div class="warn">${r.name} has activated This Dance Is for Vittoria!</div>`);
-      setTimeout(()=>{ if(r._mods && r._mods.Fenomeno){ r.maxSpeed -= r._mods.Fenomeno.ms; r.acc -= r._mods.Fenomeno.ac; delete r._mods.Fenomeno; } }, 10000);
-    }
-  },
   "Man o' War": {
     id: "The Greatest Stands Above All",
     chance: 0.002, minPct: 40,
@@ -850,6 +871,7 @@ const DEFAULT_PLAYER = {
   name: "Player",
   stats: {Speed:100,Stamina:100,Power:100,Guts:100,Wits:100},
   energy:100,
+  mood: "Normal",
   fame:0,
   sp:0,
   racesDone:0,
@@ -860,6 +882,128 @@ const DEFAULT_PLAYER = {
   completed:{},
   highestTitle: "None",
 };
+
+const MOOD_ORDER = ["Awful","Bad","Normal","Good","Great"];
+const MOODS = {
+  "Great": { color:"#FFC0D9", statGainMult:1.20, trainingFailAdd:0.00, raceSpeedMult:1.04, staminaMult:1.04, regenMult:1.04 },
+  "Good":  { color:"#FF9A2E", statGainMult:1.10, trainingFailAdd:0.00, raceSpeedMult:1.02, staminaMult:1.02, regenMult:1.02 },
+  "Normal":{ color:"#FFD700", statGainMult:1.00, trainingFailAdd:0.00, raceSpeedMult:1.00, staminaMult:1.00, regenMult:1.00 },
+  "Bad":   { color:"#4EA7FF", statGainMult:0.90, trainingFailAdd:0.02, raceSpeedMult:0.98, staminaMult:0.98, regenMult:0.98 },
+  "Awful": { color:"#9B59FF", statGainMult:0.80, trainingFailAdd:0.04, raceSpeedMult:0.96, staminaMult:0.96, regenMult:0.96 }
+};
+
+function getMoodInfo(moodName){
+  const name = moodName || (state && state.mood) || "Normal";
+  return MOODS[name] || MOODS["Normal"];
+}
+
+function getMoodStatGainMult(moodName){
+  // returns multiplier applied to stat gains (1 = normal)
+  const map = {
+    "Great": 1.20,
+    "Good" : 1.10,
+    "Normal": 1.00,
+    "Bad": 0.90,
+    "Awful": 0.80
+  };
+  return (moodName && map[moodName]) ? map[moodName] : 1;
+}
+
+
+function increaseMood(){
+  // If Migraine present, mood cannot increase
+  if(hasStatus && hasStatus("Migraine")){
+    addLog(`<div class="warn">Migraine prevents mood increases.</div>`);
+    return;
+  }
+  state.mood = state.mood || "Normal";
+  const idx = Math.max(0, MOOD_ORDER.indexOf(state.mood));
+  state.mood = MOOD_ORDER[Math.min(MOOD_ORDER.length-1, idx + 1)];
+  addLog(`<div class="ok">Mood improved to <b>${state.mood}</b>!</div>`);
+  saveState();
+  try{ refreshPlayerUI(); }catch(e){}
+}
+function decreaseMood(){
+  state.mood = state.mood || "Normal";
+  const idx = Math.max(0, MOOD_ORDER.indexOf(state.mood));
+  state.mood = MOOD_ORDER[Math.max(0, idx - 1)];
+  addLog(`<div class="warn">${player.name}'s Mood fell to <b>${state.mood}</b></div>`);
+  saveState();
+  try{ refreshPlayerUI(); }catch(e){}
+}
+
+function applyMoodChangeAfterRace(place){
+  if(typeof place !== "number") return;
+  if(place <= 3){
+    increaseMood();
+    return;
+  }
+  if(place >= 8){
+    const base = 0.5;
+    const energy = (state && typeof state.energy === 'number') ? state.energy : 100;
+    const extra = Math.max(0, 50 - energy) * 0.0075; // 0.75% per 1% below 50
+    const chance = Math.min(1, base + extra);
+    if(Math.random() < chance) decreaseMood();
+    return;
+  }
+}
+
+function ensureStatuses(){
+  state.statuses = state.statuses || {};
+}
+function addStatus(name){
+  ensureStatuses();
+  if(state.statuses[name]) return;
+  state.statuses[name] = { addedAt: Date.now() };
+  addLog(`<span class="warn">Status acquired: <b>${name}</b></span>`);
+  try{ saveState(); }catch(e){}
+  try{ refreshPlayerUI(); }catch(e){}
+}
+function removeStatus(name){
+  ensureStatuses();
+  if(!state.statuses[name]) return;
+  delete state.statuses[name];
+  addLog(`<span class="ok">Status removed: <b>${name}</b></span>`);
+  try{ saveState(); }catch(e){}
+  try{ refreshPlayerUI(); }catch(e){}
+}
+function hasStatus(name){
+  ensureStatuses();
+  return !!state.statuses[name];
+}
+function clearNegativeStatuses(){
+  // remove all the statuses that are considered "negative"
+  const negative = ["Practice Poor","Migraine","Dry Skin","Night Owl","Slacker"];
+  for(const s of negative) removeStatus(s);
+}
+function updateStatusUI(){
+  try{
+    const el = getEl("playerStatus");
+    if(!el) return;
+    const names = Object.keys(state.statuses || {});
+    if(names.length === 0){
+      el.style.display = "none";
+      el.innerHTML = "";
+      return;
+    }
+    el.style.display = "block";
+    el.innerHTML = "";
+    // render each status as blue-ish badge
+    for(const n of names){
+      const badge = document.createElement("div");
+      badge.textContent = n;
+      badge.style.display = "inline-block";
+      badge.style.padding = "4px 8px";
+      badge.style.marginRight = "6px";
+      badge.style.marginBottom = "6px";
+      badge.style.background = "rgba(60,140,255,0.12)";
+      badge.style.border = "1px solid rgba(60,140,255,0.16)";
+      badge.style.fontWeight = "600";
+      badge.style.color = "#0b2b5a";
+      el.appendChild(badge);
+    }
+  }catch(e){}
+}
 
 let state = loadState() || JSON.parse(JSON.stringify(DEFAULT_PLAYER));
 if(!state.name) state.name = DEFAULT_PLAYER.name;
@@ -1091,10 +1235,12 @@ function populateRaces(){
   for(const r of RACES){
     let disabled = false;
     if(r.oneTime && state.completed && state.completed[r.id]) disabled = true;
+	if(state.lockedRaces && state.lockedRaces[r.id]) disabled = true;
     if(r.grade === "G3" && !(state.completed && state.completed["Debut Race"])) disabled = true;
     if(r.grade === "G2" && !(state.completed && RACES.filter(x=>x.grade==="G3").every(rr=>state.completed && state.completed[rr.id]))) disabled = true;
     if(r.grade === "G1" && !(state.completed && RACES.filter(x=>x.grade==="G2").every(rr=>state.completed && state.completed[rr.id]))) disabled = true;
     if(r.grade === "Finale" && (state.g1RacesRun||0)<3) disabled = true;
+	if(!canEnterRace(r)) disabled = true;
     const opt = document.createElement("option");
     opt.value = r.id;
 	let dist = "";
@@ -1166,6 +1312,21 @@ function refreshPlayerUI(){
     setText("activeEquip", state.abilities.equippedActive || "—");
     setText("winLoss", `${state.wins||0}-${state.losses||0}`);
     if(typeof updateTitle === "function") try{ updateTitle(); }catch(e){ console.warn("updateTitle error", e); }
+	
+	try {
+	  const moodEl = getEl("playerMood");
+	  if(!moodEl) return;
+	  const mi = getMoodInfo(state && state.mood);
+	  moodEl.textContent = (state.mood || "Normal");
+	  moodEl.style.padding = "6px 8px";
+	  moodEl.style.marginTop = "6px";
+	  moodEl.style.display = "inline-block";
+	  moodEl.style.fontWeight = "600";
+	  moodEl.style.color = "#111";
+	  moodEl.style.border = "2.2px solid rgba(0,0,0,0.5)";
+	  moodEl.style.borderRadius = "15px";
+	  moodEl.style.background = (mi && mi.color) || "#FFD700";
+	} catch(e){ /* ignore mood UI errors */ }
 
     // Stats grid (if present)
     const grid = getEl("statsGrid");
@@ -1431,6 +1592,8 @@ function refreshPlayerUI(){
     // Failsafe so UI doesn't crash the game if something unexpected happens
     console.error("refreshPlayerUI fatal error:", err);
   }
+  
+  try{ updateStatusUI(); }catch(e){}
 }
 
 /* -------------------------
@@ -1681,9 +1844,72 @@ function doTraining(stat){
 
   const {fail, mul} = getTrainingChanceAndMultiplier(state.energy);
   const gainBase = trainingGainsFor(stat);
-  const gain = gainBase * mul;
+
+  // base chance adjustments from mood
+  const mood = getMoodInfo(state && state.mood);
+  let failChance = (fail || 0) + (mood.trainingFailAdd || 0);
+
+  // Practice Poor increases base training failure by +4%
+  if(hasStatus("Practice Poor")) failChance += 0.04;
+
+  // perform the training roll
   const roll = Math.random();
-  const failed = roll < fail || state.energy <= 0;
+  // apply Slacker effect: when Slacker present, 15% chance to gain NOTHING (treated as "failed" for streak)
+  let slackerBlocked = false;
+  if(hasStatus("Slacker") && Math.random() < 0.15){
+    slackerBlocked = true;
+  }
+
+  const failed = slackerBlocked || roll < Math.min(1, failChance) || state.energy <= 0;
+
+  // Compute stat gain (if not failed). Slacker presence does not change gain value (it only can block gain).
+  const moodMult = getMoodInfo(state && state.mood).statGainMult || 1;
+  let gain = 0;
+  if(!failed){
+    gain = gainBase * mul * moodMult;
+    // If Slacker present and blocked, we already set failed = true above.
+  }
+
+  // update consecutive failed training counter (for Practice Poor logic)
+  state.training = state.training || {};
+  state.training.failedStreak = state.training.failedStreak || 0;
+  if(failed) state.training.failedStreak++;
+  else state.training.failedStreak = 0;
+
+  // if >=2 failed in a row, chance to get Practice Poor: 20% at 2, +10% per additional failed training
+  if(state.training.failedStreak >= 2 && !hasStatus("Practice Poor")){
+    const extra = Math.max(0, state.training.failedStreak - 2) * 0.10;
+    const chance = 0.20 + extra;
+    if(Math.random() < Math.min(1, chance)) addStatus("Practice Poor");
+  }
+
+  // Slacker: 1% chance to acquire after training
+  if(Math.random() < 0.01 && !hasStatus("Slacker")) addStatus("Slacker");
+
+  // Migraine: 5% chance after training, doubled if the training failed
+  const migraineChance = failed ? 0.10 : 0.05;
+  if(Math.random() < migraineChance && !hasStatus("Migraine")) addStatus("Migraine");
+
+  // NightOwl day-tracking: increment days not slept (training is activity without sleeping)
+  state.daysSinceSleep = (state.daysSinceSleep || 0) + 1;
+  
+  (function(){
+    const d = state.daysSinceSleep || 0;
+    if(d >= 5 && !hasStatus("Night Owl")){
+      const extra = Math.max(0, d - 5) * 0.10;
+      const chance = Math.min(1, 0.20 + extra);
+      if(Math.random() < chance) addStatus("Night Owl");
+    }
+  })();
+
+  // Dry Skin: training breaks a consecutive-races streak so reset that counter
+  state.consecutiveRacesWithoutRestOrTrain = 0;
+
+  // Night Owl "post-training energy drop" possibility
+  if(hasStatus("Night Owl") && Math.random() < 0.33){
+    // reduce 10 energy as penalty
+    state.energy = Math.max(0, (state.energy || 0) - 10);
+  }
 
   if(state.training.totalTrains >= 30){
     state.training.locked = true;
@@ -1710,6 +1936,7 @@ function doTraining(stat){
       const random = Math.floor(Math.random() * amt.length);
       const loss = amt[random];
       state.stats[stat] = clamp((state.stats[stat]||0) - (gain * loss), 0, getEffectiveStatCapForPlayer(state));
+	  state.training.totalTrains = (state.training.totalTrains||0) + 1;
       addLog(`<span class="warn">${player.name}'s ${stat} training failed. Lost ${gain.toFixed(2)} ${stat}.</span>`);
     } else {
 	  if (stat !== "Wits") {
@@ -1793,7 +2020,20 @@ function derivePlayerValues(stats){
   const regenPerTick = 0.06 + (stats.Guts - 100)*0.00015;
   const gutsVal = stats.guts ?? stats.Guts ?? stats.GUTS ?? 100;
   const minSpeed = gutsToMinSpeed(gutsVal);
-  return {maxSpeed, staminaMax, acc, regenPerTick, minSpeed};
+
+  // apply mood-based race modifiers
+  try {
+    const m = getMoodInfo(state && state.mood);
+    return {
+      maxSpeed: maxSpeed * (m.raceSpeedMult || 1),
+      staminaMax: staminaMax * (m.staminaMult || 1),
+      acc,
+      regenPerTick: regenPerTick * (m.regenMult || 1),
+      minSpeed
+    };
+  } catch(e){
+    return { maxSpeed, staminaMax, acc, regenPerTick, minSpeed };
+  }
 }
 
 function makeOpponent(name, grade){
@@ -2128,6 +2368,22 @@ function prepareRace(selectedRaceId){
   el("commentary").innerHTML = "";
   applyWeatherToRace(raceState);
   addLog(`Prepared race: ${race.id}`);
+  
+  try{
+    state.lockedRaces = state.lockedRaces || {};
+    if(race && (race.grade === "G3" || race.grade === "G2")) {
+      state.lockedRaces[race.id] = true;
+      saveState();
+    }
+  }catch(e){}
+  
+  state.consecutiveRacesWithoutRestOrTrain = state.consecutiveRacesWithoutRestOrTrain || 0;
+  state.consecutiveRacesWithoutRestOrTrain++;
+  // if 3 races in a row without training/rest, award Dry Skin
+  if(state.consecutiveRacesWithoutRestOrTrain >= 3 && !hasStatus("Dry Skin")){
+    addStatus("Dry Skin");
+  }
+  
   if(el("enterRaceBtn")) el("enterRaceBtn").style.display = "none";
 }
 
@@ -2625,14 +2881,11 @@ function endRace(){
   if(commentaryHandle){ clearInterval(commentaryHandle); commentaryHandle = null; }
   if(!raceState) return;
   raceState.running = false;
-  let amt = 0;
-  
+
   const anyFinished = raceState.field && raceState.field.some(r => r.finished);
   if((raceState.time === 0 || typeof raceState.time === "undefined") && !anyFinished){
     addLog("Race aborted before start. No results recorded.");
-    // restore Enter Race button so user can re-enter
     if(el("enterRaceBtn")) el("enterRaceBtn").style.display = "";
-    // clear the prepared race state fully so UI / logic is clean
     raceState = null;
     return;
   }
@@ -2659,133 +2912,139 @@ function endRace(){
     return candidates[rand(0, candidates.length-1)];
   }
 
+  // mood multiplier for stat gains (safe default 1)
+  const moodMult = getMoodStatGainMult(state && state.mood);
+
+  function applyStatGainForPositions(picks, gradeMultiplier){
+    for(const statKey of picks){
+      const base = state.stats[statKey] || 0;
+      const cap = getEffectiveStatCapForPlayer(state);
+      // compute gain = base * (gradeMultiplier - 1) * moodMult
+      const gain = (base * Math.max(0, (gradeMultiplier - 1)) ) * moodMult;
+      const after = clamp(base + gain, 0, cap);
+      const amount = after - base;
+      state.stats[statKey] = after;
+      statGains.push({ stat: statKey, amount });
+    }
+  }
+
   if(place === 1){
     state.fame = (state.fame || 0) + baseFame;
-	spGain = (state.sp||0) + baseSP;
+    spGain = (state.sp||0) + baseSP;
     const picked = [];
     for(let i=0;i<5;i++){
       const statKey = pickStatForGain(picked);
       picked.push(statKey);
-      const base = state.stats[statKey] || 0;
-      const after = clamp(base * 1.05, 0, getEffectiveStatCapForPlayer(state));
-      const amount = after - base;
-      state.stats[statKey] = after;
-      statGains.push({ stat: statKey, amount });
     }
-    var gainsHtml = "";
-    if (Array.isArray(statGains) && statGains.length>0) {
-      gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
-    }
+    applyStatGainForPositions(picked, 1.05);
     state.sp += spGain;
     state.wins = (state.wins||0) + 1;
+    // record per-race win count
+    state.raceWins = state.raceWins || {};
+    const rn = (raceState.race && (raceState.race.id || raceState.race.name)) || "unknown";
+    state.raceWins[rn] = (state.raceWins[rn]||0) + 1;
+    var gainsHtml = "";
+    if (Array.isArray(statGains) && statGains.length>0) gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     addLog(`<b class="ok">Congratulations! ${player.name} won 1st place!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}</b>`);
   } else if(place === 2){
     state.fame = (state.fame || 0) + Math.round(baseFame * 0.75);
-	state.losses = (state.losses||0) + 1;
+    state.losses = (state.losses||0) + 1;
     spGain = (state.sp||0) + (baseSP * 0.5);
     const picked = [];
     for(let i=0;i<4;i++){
-      const statKey = pickStatForGain(picked);
-      picked.push(statKey);
-      const base = state.stats[statKey] || 0;
-      const after = clamp(base * 1.03, 0, getEffectiveStatCapForPlayer(state));
-      const amount = after - base;
-      state.stats[statKey] = after;
-      statGains.push({ stat: statKey, amount });
+      picked.push(pickStatForGain(picked));
     }
+    applyStatGainForPositions(picked, 1.03);
+    state.sp += spGain;
     var gainsHtml = "";
-    if (Array.isArray(statGains) && statGains.length>0) {
-      gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
-    }
-	state.sp += spGain;
+    if (Array.isArray(statGains) && statGains.length>0) gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     addLog(`<b class="ok">${player.name} finished 2nd place! Nice!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}</b>`);
   } else if(place === 3){
     state.fame = (state.fame || 0) + Math.round(baseFame * 0.5);
-	state.losses = (state.losses||0) + 1;
+    state.losses = (state.losses||0) + 1;
     spGain = (state.sp||0) + (baseSP * 0.2);
     const picked = [];
     for(let i=0;i<3;i++){
-      const statKey = pickStatForGain(picked);
-      picked.push(statKey);
-      const base = state.stats[statKey] || 0;
-      const after = clamp(base * 1.03, 0, getEffectiveStatCapForPlayer(state));
-      const amount = after - base;
-      state.stats[statKey] = after;
-      statGains.push({ stat: statKey, amount });
+      picked.push(pickStatForGain(picked));
     }
+    applyStatGainForPositions(picked, 1.03);
+    state.sp += spGain;
     var gainsHtml = "";
-    if (Array.isArray(statGains) && statGains.length>0) {
-      gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
-    }
-	state.sp += spGain;
+    if (Array.isArray(statGains) && statGains.length>0) gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     addLog(`<b class="ok">${player.name} won 3rd place! Good job!<br>Earned ${state.fame} Fame<br>Earned ${spGain} SP<br>${gainsHtml}<br></b>`);
   } else if(typeof place === 'number' && place > 3 && place <= 8) {
     state.losses = (state.losses||0) + 1;
-	spGain = (state.sp||0) + (baseSP * 0.2);
+    spGain = (state.sp||0) + (baseSP * 0.2);
     const picked = [];
     for(let i=0;i<2;i++){
-      const statKey = pickStatForGain(picked);
-      picked.push(statKey);
-      const base = state.stats[statKey] || 0;
-      const after = clamp(base * 1.03, 0, getEffectiveStatCapForPlayer(state));
-      const amount = after - base;
-      state.stats[statKey] = after;
-      statGains.push({ stat: statKey, amount });
+      picked.push(pickStatForGain(picked));
     }
+    applyStatGainForPositions(picked, 1.03);
+    state.sp += spGain;
     var gainsHtml = "";
-    if (Array.isArray(statGains) && statGains.length>0) {
-      gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
-    }
-	state.sp += spGain;
+    if (Array.isArray(statGains) && statGains.length>0) gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Earned ${spGain} SP<br>${gainsHtml}</span>`);
   } else if (typeof place === 'number' && place > 8 && place <= 12) {
-	state.fame = (state.fame || 0) - 50;
-	spGain = (state.sp||0) + (baseSP * 0.1);
-	state.losses = (state.losses||0) + 1;
+    state.fame = (state.fame || 0) - 50;
+    spGain = (state.sp||0) + (baseSP * 0.1);
+    state.losses = (state.losses||0) + 1;
     const picked = [];
     for(let i=0;i<2;i++){
-      const statKey = pickStatForGain(picked);
-      picked.push(statKey);
-      const base = state.stats[statKey] || 0;
-      const after = clamp(base * 1.02, 0, getEffectiveStatCapForPlayer(state));
-      const amount = after - base;
-      state.stats[statKey] = after;
-      statGains.push({ stat: statKey, amount });
+      picked.push(pickStatForGain(picked));
     }
+    applyStatGainForPositions(picked, 1.02);
+    state.sp += spGain;
     var gainsHtml = "";
-    if (Array.isArray(statGains) && statGains.length>0) {
-      gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
-    }
-	state.sp += spGain;
+    if (Array.isArray(statGains) && statGains.length>0) gainsHtml = statGains.map(g => `Gained ${(g.amount||0).toFixed(2)} ${g.stat}`).join("<br>");
     addLog(`<span class="warn">${player.name} finished ${place}th place.<br>Lost 50 Fame<br>Earned ${spGain} SP<br>${gainsHtml}</span>`);
   } else {
     if(typeof place === 'number'){
       state.fame = (state.fame || 0) - 100;
-	  spGain = (state.sp||0) + (baseSP * 0.1);
+      spGain = (state.sp||0) + (baseSP * 0.1);
       state.losses = (state.losses||0) + 1;
-	  state.sp += spGain;
+      state.sp += spGain;
       addLog(`<span class="warn">${player.name} finished ${place}th place. Better luck next time...<br>Lost 100 Fame<br>Earned ${spGain} SP</span>`);
     } else {
       addLog(`<span class="warn">Race ended but finish place not found for the player.</span>`);
     }
   }
   
+  try{
+    const migraineChance = (place && place <= 3) ? 0.05 : 0.10;
+    if(Math.random() < migraineChance && !hasStatus("Migraine")) addStatus("Migraine");
+  }catch(e){}
+
+  // Dry Skin: if present -> 10% chance to lower mood after race
+  try{
+    if(hasStatus("Dry Skin") && Math.random() < 0.10) {
+      decreaseMood();
+    }
+  }catch(e){}
+
+  // Night Owl: if present -> 33% chance to lower energy after race
+  try{
+    if(hasStatus("Night Owl") && Math.random() < 0.33){
+      state.energy = Math.max(0, (state.energy||0) - 10);
+    }
+  }catch(e){}
+
+  // Finale/path logic (unchanged)
   if(raceState.race && raceState.race.grade === "Finale" && state.finale && state.finale.chosenPath){
-  const path = state.finale.chosenPath;
-  const idx = state.finale.progressIndex || 0;
-  const pathArr = RACES.Finale[path] || [];
-  if(pathArr[idx] && pathArr[idx].name === raceState.race.name){
-    state.finale.progressIndex = idx + 1;
-    saveState();
-    if(state.finale.progressIndex >= pathArr.length){
-      addLog(`<b class="ok">You have completed the ${path}! ${player.name} has officially ended their career and will be moved to retirement!</b>`);
-      retireNow();
-    } else {
-      const next = pathArr[state.finale.progressIndex];
-      addLog(`<div class="ok">Next ${path} race unlocked! ${next.name}</div>`);
+    const path = state.finale.chosenPath;
+    const idx = state.finale.progressIndex || 0;
+    const pathArr = RACES.Finale[path] || [];
+    if(pathArr[idx] && pathArr[idx].name === raceState.race.name){
+      state.finale.progressIndex = idx + 1;
+      saveState();
+      if(state.finale.progressIndex >= pathArr.length){
+        addLog(`<b class="ok">You have completed the ${path}! ${player.name} has officially ended their career and will be moved to retirement!</b>`);
+        retireNow();
+      } else {
+        const next = pathArr[state.finale.progressIndex];
+        addLog(`<div class="ok">Next ${path} race unlocked! ${next.name}</div>`);
+      }
     }
   }
-}
 
   // fame floor
   state.fame = Math.max(0, Math.round(state.fame || 0));
@@ -2797,7 +3056,7 @@ function endRace(){
     addLog(`<span class='ok'>${player.name}'s Debut Race has ended. Good luck on their career!</span>`);
   }
 
-  // Save a snapshot to leaderboard safely (no syntax errors)
+  // snapshot to history
   if(!state.history) state.history = [];
   state.history.push({
     name: state.name || "Unnamed",
@@ -2809,17 +3068,15 @@ function endRace(){
     stats: JSON.parse(JSON.stringify(state.stats || {})),
     timestamp: new Date().toISOString()
   });
-  
-  state.training.daysUntilRace += 30;
+
+  // training/time resets (existing behavior preserved)
   state.training.daysUntilRace = 30;
-  state.training.lockRaceCount -= 30;
-  state.training.lockRaceCount = 0;
   state.training.lockRaceCount = null;
-  state.training.totalTrains -= 30;
   state.training.totalTrains = 0;
   state.training.locked = false;
   addLog("<span class='ok'>Prepare for your next race!</span>");
-  
+
+  // clear per-racer intervals/mods
   if(raceState && raceState.field){
     for(const r of raceState.field){
       if(r._mods){
@@ -2830,13 +3087,39 @@ function endRace(){
     }
   }
 
+  // If the player just did a G2 or G1 race, clear locked races of the lower grade
+  try{
+    if(raceState && raceState.race && raceState.race.grade){
+      if(raceState.race.grade === "G2"){
+        // entering/completing a G2 race unlocks previously locked G3 races
+        state.lockedRaces = state.lockedRaces || {};
+        for(const rr of RACES.filter(x=>x.grade==="G3")) delete state.lockedRaces[rr.id];
+      } else if(raceState.race.grade === "G1"){
+        // completing G1 clears G2 locks
+        state.lockedRaces = state.lockedRaces || {};
+        for(const rr of RACES.filter(x=>x.grade==="G2")) delete state.lockedRaces[rr.id];
+      }
+    }
+  }catch(e){}
+  
+  try{ applyMoodChangeAfterRace(place); }catch(e){}
+
   saveState();
   refreshPlayerUI();
   try{ clearWeatherEffects(); }catch(e){}
   try{ AudioManager.stopRaceAndResumeTitle(); }catch(e){ console.warn("AudioManager resume failed", e); }
   abBtn.dataset.disabled = false;
-  // show Enter Race again
   if(el("enterRaceBtn")) el("enterRaceBtn").style.display = "";
+  raceState = null;
+}
+
+function countWinsInGrade(grade){
+  if(!grade) return 0;
+  state.raceWins = state.raceWins || {};
+  const names = (RACES || []).filter(r => r.grade === grade).map(r => r.id || r.name || "");
+  let total = 0;
+  for(const n of names) total += (state.raceWins[n] || 0);
+  return total;
 }
 
 function haveWonAllRaceNames(listOfRaceNames){
@@ -2849,7 +3132,8 @@ function haveWonAllRaceNames(listOfRaceNames){
 
 function canEnterRace(race){
   if(!race) return false;
-  // Finale path enforcement
+
+  // Finale path enforcement (unchanged)
   if(state.finale && state.finale.chosenPath){
     const path = state.finale.chosenPath;
     const pathArr = RACES.Finale[path] || [];
@@ -2859,19 +3143,43 @@ function canEnterRace(race){
     return allowed.name === race.name;
   }
 
+  // if this race has been one-time completed
+  if(RACES.oneTime && state.completed && state.completed[race.id]) return false;
+
+  // If a specific race has been locked by entering it previously, disallow
+  if(state.lockedRaces && state.lockedRaces[race.id]) return false;
+
+  // Debut requirement
+  if(race.grade === "G3" && !(state.completed && state.completed["Debut Race"])) return false;
+
+  // G2 unlocking: require wins or (fallback to finish-all when wins === 0)
   if(race.grade === "G2"){
-    const g3Names = (RACES.G3 || []).map(x => x.name);
-    return haveWonAllRaceNames(g3Names);
+    const g3WinCount = countWinsInGrade("G3");
+    if(g3WinCount >= 4) return true; // unlocked by 4 G3 wins
+    if(g3WinCount === 0){
+      // fallback: must complete all G3 races at least once
+      return (state.completed && RACES.filter(x=>x.grade==="G3").every(rr=>state.completed && state.completed[rr.id]));
+    }
+    // wins 1-3: locked until 4 wins
+    return false;
   }
+
+  // G1 unlocking: same logic with G2 wins
   if(race.grade === "G1"){
-    const g2Names = (RACES.G2 || []).map(x => x.name);
-    return haveWonAllRaceNames(g2Names);
+    const g2WinCount = countWinsInGrade("G2");
+    if(g2WinCount >= 4) return true;
+    if(g2WinCount === 0){
+      return (state.completed && RACES.filter(x=>x.grade==="G2").every(rr=>state.completed && state.completed[rr.id]));
+    }
+    return false;
   }
-  if(race.grade === "G3") return true;
+
+  // Finale gating (unchanged)
   if(race.grade === "Finale"){
     if((state.g1RacesRun||0) < 3) return false;
     if(!state.finale || !state.finale.chosenPath) return true;
   }
+
   return true;
 }
 
@@ -2914,9 +3222,10 @@ function useActiveById(id){
   const curRaceName = raceState && raceState.race && raceState.race.name;
   const inMongolDerby = curRaceName === "Mongol Derby";
 
-  // If button already visually marked disabled, show the correct message and return
-  if(abBtn && abBtn.dataset && abBtn.dataset.disabled){
-    // If Mongol Derby, show remaining cooldown if any; otherwise show exhausted
+  // defensive UI button lookup (visual guard)
+  // immediate short-circuit if visible button already disabled
+  const maybeBtn = _getAbilityButtonForId(id);
+  if(maybeBtn && maybeBtn.dataset && maybeBtn.dataset.disabled){
     if(inMongolDerby){
       const last = state.playerAbilityLastUsed || 0;
       const elapsed = nowTs - last;
@@ -2928,15 +3237,14 @@ function useActiveById(id){
     return;
   }
 
-  // Immediately mark button visually disabled so other near-simultaneous inputs hit the early-return above.
-  // (We will re-enable it later depending on race/type).
+  // mark visually disabled (until we explicitly re-enable)
   setAbilityButtonDisabled(id, true);
 
-  // Now run the usual cooldown/race checks (defensive)
+  // cooldown / race checks
   if(!inMongolDerby){
     if(state.playerAbilityLastUsedRace && state.playerAbilityLastUsedRace === curRaceName){
       addLog(`<span class="warn">You're too exhausted to do that again.</span>`);
-      // button stays disabled for the race (that's desired behavior)
+      // keep disabled for duration of race (will be cleared by clearAllAbilityEffects/endRace)
       return;
     }
   } else {
@@ -2947,25 +3255,25 @@ function useActiveById(id){
     }
   }
 
-  // Mark usage immediately (prevents races between near-simultaneous calls)
+  // register usage immediately
   state.playerAbilityLastUsed = nowTs;
   state.playerAbilityLastUsedRace = curRaceName;
   try{ saveState(); }catch(e){}
 
-  if(!a){ addLog("No such active."); return; }
-  if(state.sp < 2){ addLog(`<span class="warn">Not enough SP</span>`); return; }
+  if(!a){ addLog("No such active."); setAbilityButtonDisabled(id, false); return; }
+  if(state.sp < 2){ addLog(`<span class="warn">Not enough SP</span>`); setAbilityButtonDisabled(id, false); return; }
 
   // consume cost
   state.sp -= 2;
 
   const player = (raceState.field||[]).find(f=>f.isPlayer);
-  if(!player){ addLog("No player found."); return; }
+  if(!player){ addLog("No player found."); setAbilityButtonDisabled(id, false); return; }
   player._mods = player._mods || {};
 
-  // Unique mod slot per active id (guarantees idempotence)
+  // canonical key for this active so checks/reverts are consistent
   const modKey = "__active_" + id;
 
-  // revert helper
+  // revert helper uses the canonical key
   function revertModForPlayer(p, key){
     if(!p || !p._mods || !p._mods[key]) return;
     const mod = p._mods[key];
@@ -2974,10 +3282,14 @@ function useActiveById(id){
     try{
       if(typeof mod.ms === 'number' && typeof p.maxSpeed === 'number'){ p.maxSpeed = Math.max(0, (p.maxSpeed||0) - mod.ms); }
       if(typeof mod.ac === 'number' && typeof p.acc === 'number'){ p.acc = Math.max(0, (p.acc||0) - mod.ac); }
+      if(typeof mod.regen === 'number' && typeof p.regenPerTick === 'number'){
+        p.regenPerTick = Math.max(0, (p.regenPerTick || 0) - (mod.regenPerTick || mod.regen || 0));
+      }
     }catch(e){ console.warn("revertMod error", e); }
     try{ delete p._mods[key]; }catch(e){}
   }
 
+  // If player already has this active-mod, either prevent or revert (Mongol Derby allows toggle)
   if(player._mods[modKey]){
     if(!inMongolDerby){
       addLog(`<span class="warn">You're too exhausted to do that again.</span>`);
@@ -2987,111 +3299,104 @@ function useActiveById(id){
     }
   }
 
-  if(!player) return;
-  
+  // Helper to create a timed mod consistently under modKey
+  function applyTimedModToPlayer(p, key, modObj, durationSeconds){
+    modObj = Object.assign({}, modObj || {});
+    modObj.expires = raceState.time + (durationSeconds || 0);
+    p._mods[key] = modObj;
+    try{ _applyWitsScalingToMod(p._mods[key]); }catch(e){}
+    // schedule safe revert (store timeoutId so revertModForPlayer can clear it)
+    try{
+      modObj.timeoutId = setTimeout(()=>{ try{ revertModForPlayer(p, key); }catch(e){} }, Math.max(0, Math.round((modObj.expires - raceState.time) * 1000)));
+    }catch(e){}
+  }
+
+  // Execute the active effect (standardized to use modKey)
   if(a.fn === "plusUltra"){
     const ms = player.maxSpeed * 0.10; const ac = player.acc * 0.10;
-    player._mods.PlusUltra = {ms,ac,expires: raceState.time + 9};
-	try{ _applyWitsScalingToMod(r._mods.PlusUltra); }catch(e){}
+    applyTimedModToPlayer(player, modKey, { ms, ac }, 9);
     player.maxSpeed += ms; player.acc += ac;
-	const delayMs = Math.max(0, Math.round((player._mods.PlusUltra.expires - raceState.time) * 1000));
-    setTimeout(()=>{ if(player._mods && player._mods.PlusUltra){ player.maxSpeed -= player._mods.PlusUltra.ms; player.acc -= player._mods.PlusUltra.ac; delete player._mods.PlusUltra; } }, 9000);
     addLog(`<span id="ok">Plus Ultra! Activated.</span>`);
   } else if(a.fn === "regen70"){
-    const __st = (r.staminaMax * 0.7) * _witsEffectMult();
-	r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
+    const __st = (player.staminaMax * 0.7) * _witsEffectMult();
+    player.stamina = clamp(player.stamina + __st, 0, player.staminaMax);
     addLog(`<span id="ok">No... Not Yet! Activated.</span>`);
   } else if(a.fn === "comeback"){
     const rank = getCurrentRank(raceState, player);
     const back = Math.max(0, rank - 1);
     const mult = 0.05 * (1 + back);
     const ms = player.maxSpeed * mult; const ac = player.acc * mult;
-    player._mods.Comeback = {ms,ac,expires: raceState.time + 4};
-	try{ _applyWitsScalingToMod(r._mods.Comeback); }catch(e){}
+    applyTimedModToPlayer(player, modKey, { ms, ac }, 4);
     player.maxSpeed += ms; player.acc += ac;
-	const delayMs = Math.max(0, Math.round((player._mods.Comeback.expires - raceState.time) * 1000));
-    setTimeout(()=>{ if(player._mods && player._mods.Comeback){ player.maxSpeed -= player._mods.Comeback.ms; player.acc -= player._mods.Comeback.ac; delete player._mods.Comeback; } }, 4000);
     addLog(`<span id="ok">I Am Not Giving Up Now! Activated.</span>`);
   } else if(a.fn === "planB"){
     const rank = getCurrentRank(raceState, player);
     if(rank >= 4){
-      const __st = (r.staminaMax * 0.5) * _witsEffectMult();
-	  r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
+      const __st = (player.staminaMax * 0.5) * _witsEffectMult();
+      player.stamina = clamp(player.stamina + __st, 0, player.staminaMax);
       const ac = player.acc * 0.05;
-      player._mods.PlanB = {ac,expires: raceState.time + 9};
-	  try{ _applyWitsScalingToMod(r._mods.PlanB); }catch(e){}
+      applyTimedModToPlayer(player, modKey, { ac }, 9);
       player.acc += ac;
-	  const delayMs = Math.max(0, Math.round((player._mods.PlanB.expires - raceState.time) * 1000));
-      setTimeout(()=>{ if(player._mods && player._mods.PlanB){ player.acc -= player._mods.PlanB.ac; delete player._mods.PlanB; } }, 9000);
       addLog(`<span id="ok">Plan B Activated.</span>`);
     } else addLog("Plan B Activated.");
   } else if(a.fn === "triumph"){
     const ms = player.maxSpeed * 0.1;
-	const ac = player.acc * 0.05;
-    player._mods.Triumph = {ms,expires: raceState.time + 9};
-	try{ _applyWitsScalingToMod(r._mods.Triumph); }catch(e){}
-    player.maxSpeed += ms;
-	player.acc += ac;
-	const delayMs = Math.max(0, Math.round((player._mods.Triumph.expires - raceState.time) * 1000));
-    setTimeout(()=>{ if(player._mods && player._mods.Triumph){ player.maxSpeed -= player._mods.Triumph.ms; delete player._mods.Triumph; } }, 9000);
+    const ac = player.acc * 0.05;
+    applyTimedModToPlayer(player, modKey, { ms, ac }, 9);
+    player.maxSpeed += ms; player.acc += ac;
     addLog(`<span id="ok">Triumphant Pulse Activated!.</span>`);
   } else if(a.fn === "redshift"){
-      const ms = player.maxSpeed * 0.20;
-      player._mods.redshift = { ms, expires: raceState.time + 5 };
-	  try{ _applyWitsScalingToMod(r._mods.redshift); }catch(e){}
-      player.maxSpeed += ms;
-      addLog(`<div class="ok">Red Shift Activated!</div>`);
-	  const delayMs = Math.max(0, Math.round((player._mods.redshift.expires - raceState.time) * 1000));
-      setTimeout(()=>{ if(player._mods && player._mods.redshift){ player.maxSpeed -= player._mods.redshift.ms; delete player._mods.redshift; } }, 5000);
+    const ms = player.maxSpeed * 0.20;
+    applyTimedModToPlayer(player, modKey, { ms }, 5);
+    player.maxSpeed += ms;
+    addLog(`<div class="ok">Red Shift Activated!</div>`);
   } else if(a.fn === "swing"){
-      if(!player.reachedMiddle) return;
+    if(!player.reachedMiddle){ addLog("Swing failed (not at middle)."); }
+    else {
       const ms = player.maxSpeed * 0.12;
       const ac = player.acc * 0.12;
-	  const __st = (r.staminaMax * 0.5) * _witsEffectMult();
-	  r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
-      player._mods.swing = { ms, ac, expires: raceState.time + 9 };
-	  try{ _applyWitsScalingToMod(r._mods.swing); }catch(e){}
+      const __st = (player.staminaMax * 0.5) * _witsEffectMult();
+      player.stamina = clamp(player.stamina + __st, 0, player.staminaMax);
+      applyTimedModToPlayer(player, modKey, { ms, ac }, 9);
       player.maxSpeed += ms; player.acc += ac;
       addLog(`<div class="ok">Swinging Maestro Activated!</div>`);
-	  const delayMs = Math.max(0, Math.round((player._mods.swing.expires - raceState.time) * 1000));
-      setTimeout(()=>{ if(player._mods && player._mods.swing){ player.maxSpeed -= player._mods.swing.ms; player.acc -= player._mods.swing.ac; delete player._mods.swing; } }, 9000);
+    }
   } else if(a.fn === "furtherBeyond"){
     const rank = getCurrentRank(raceState, player);
     if(rank === 1){
-      const __st = (r.staminaMax * 0.1) * _witsEffectMult();
-	  r.stamina = clamp(r.stamina + __st, 0, r.staminaMax);
+      const __st = (player.staminaMax * 0.1) * _witsEffectMult();
+      player.stamina = clamp(player.stamina + __st, 0, player.staminaMax);
       const ms = player.maxSpeed * 0.05; const ac = player.acc * 0.05;
-      player._mods.Further = {ms,ac,expires: raceState.time + 4};
-	  try{ _applyWitsScalingToMod(r._mods.Further); }catch(e){}
+      applyTimedModToPlayer(player, modKey, { ms, ac }, 4);
       player.maxSpeed += ms; player.acc += ac;
-	  const delayMs = Math.max(0, Math.round((player._mods.Further.expires - raceState.time) * 1000));
-      setTimeout(()=>{ if(player._mods && player._mods.Further){ player.maxSpeed -= player._mods.Further.ms; player.acc -= player._mods.Further.ac; delete player._mods.Further; } }, 4000);
       addLog(`<span id="ok">Must Go Even Further Beyond! Activated.</span>`);
     } else addLog(`<span id="ok">Must Go Even Further Beyond! But nothing happened...</span>`);
   } else if(a.fn === "gotcha"){
     const rank = getCurrentRank(raceState, player);
     if(rank === 2 || rank === 3){
       const ms = player.maxSpeed * 0.10; const ac = player.acc * 0.10;
-      player._mods.Gotcha = {ms,ac,expires: raceState.time + 9};
-	  try{ _applyWitsScalingToMod(r._mods.Gotcha); }catch(e){}
+      applyTimedModToPlayer(player, modKey, { ms, ac }, 9);
       player.maxSpeed += ms; player.acc += ac;
-	  const delayMs = Math.max(0, Math.round((player._mods.Gotcha.expires - raceState.time) * 1000));
-      setTimeout(()=>{ if(player._mods && player._mods.Gotcha){ player.maxSpeed -= player._mods.Gotcha.ms; player.acc -= player._mods.Gotcha.ac; delete player._mods.Gotcha; } }, 9000);
       addLog(`<span id="ok">Gotcha! Activated.</span>`);
     } else addLog(`<span id="ok">Gotcha! But nothing happened...</span>`);
+  } else {
+    // fallback: if the active defines a custom handler, attempt to call it
+    try{
+      if(typeof a.handler === "function") a.handler(player, raceState);
+    }catch(e){ console.warn("active custom handler error", e); }
   }
-  
+
   try{ saveState(); }catch(e){}
   try{ refreshPlayerUI(); }catch(e){}
-  
+
+  // If Mongol Derby: re-enable after 60s; otherwise leave disabled until race end (clearAllAbilityEffects/endRace will reset)
+  if(inMongolDerby){
+    setTimeout(()=>{ try{ setAbilityButtonDisabled(id, false); }catch(e){} }, 60000);
+  }
+
+  // end marker
   raceState.playerAbilityInProgress = false;
   return true;
-  
-  if(inMongolDerby){
-    setTimeout(()=>{
-      setAbilityButtonDisabled(id, false);
-    }, 60000);
-  }
 }
 
 /* -------------------------
@@ -3149,8 +3454,31 @@ document.addEventListener("DOMContentLoaded", ()=>{
   el("manualSaveBtn").style.cursor="pointer";
   el("manualSaveBtn").style.border="1.6px solid white";
   el("manualSaveBtn").style.fontWeight="bold";
-  el("restBtn").addEventListener("click", ()=>{
-	if(state.training.totalTrains >= 30){
+  el("restBtn").style.padding ="6px 8px";
+  el("restBtn").style.borderRadius="6px";
+  el("restBtn").style.background="linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%)";
+  el("restBtn").style.cursor="pointer";
+  el("restBtn").style.border="1.6px solid white";
+  el("restBtn").style.fontWeight="bold";
+  
+  function showRestMenu(){ const m = document.getElementById("restMenu"); if(m) m.style.display = "block"; }
+function hideRestMenu(){ const m = document.getElementById("restMenu"); if(m) m.style.display = "none"; }
+
+const rBtn = document.getElementById("restBtn");
+if(rBtn){
+  rBtn.removeEventListener("click", showRestMenu);
+  rBtn.addEventListener("click", showRestMenu);
+}
+const restSleepBtn = document.getElementById("restSleepBtn");
+const restRecreateBtn = document.getElementById("restRecreateBtn");
+const restInfirmBtn = document.getElementById("restInfirmBtn");
+const restCancelBtn = document.getElementById("restCancelBtn");
+
+if(restCancelBtn) restCancelBtn.addEventListener("click", hideRestMenu);
+
+if(restSleepBtn) restSleepBtn.addEventListener("click", ()=>{
+  hideRestMenu();
+  if(state.training.totalTrains >= 25){
       state.training.locked = true;
       state.training.lockRaceCount = state.racesDone;
       alert(`It's Race Day. No time to rest!`);
@@ -3169,13 +3497,66 @@ document.addEventListener("DOMContentLoaded", ()=>{
 	  state.training.totalTrains = (state.training.totalTrains||0) + 1;
       saveState(); refreshPlayerUI();
 	}
-  });
-  el("restBtn").style.padding ="6px 8px";
-  el("restBtn").style.borderRadius="6px";
-  el("restBtn").style.background="linear-gradient(180deg,#40ff00 20%,#29a600 80%,#40ff00 100%)";
-  el("restBtn").style.cursor="pointer";
-  el("restBtn").style.border="1.6px solid white";
-  el("restBtn").style.fontWeight="bold";
+  // reset days since slept
+  state.daysSinceSleep = 0;
+  try{ saveState(); }catch(e){}
+  // Sleep removal chances:
+  if(hasStatus("Practice Poor") && Math.random() < 0.20) removeStatus("Practice Poor");
+  if(hasStatus("Migraine") && Math.random() < 0.33) removeStatus("Migraine");
+  if(hasStatus("Night Owl") && Math.random() < 0.50) removeStatus("Night Owl");
+  try{ refreshPlayerUI(); }catch(e){}
+  state.consecutiveRacesWithoutRestOrTrain = 0;
+});
+
+if(restRecreateBtn) restRecreateBtn.addEventListener("click", ()=>{
+  hideRestMenu();
+  if(state.training.totalTrains >= 25){
+      state.training.locked = true;
+      state.training.lockRaceCount = state.racesDone;
+      alert(`It's Race Day. No time to rest!`);
+      addLog("<span class='warn'>It's Race Day. No time to rest!</span>");
+	} else {
+	  if ((state.sp||0) < 10){ addLog("<span class='warn'>Not enough SP.</span>"); return; }
+	  state.sp = Math.max(0, (state.sp||0) - 10);
+	  const gain = 10 + rand(0,10);
+	  state.energy = Math.min(100, (state.energy||0) + gain);
+	  // Mood increase (unless Migraine)
+	  if(!hasStatus("Migraine")) increaseMood();
+	  // small removal chance for Practice Poor
+	  if(hasStatus("Practice Poor") && Math.random() < 0.10) removeStatus("Practice Poor");
+	  if(state.energy >= 100){
+		for(const k in state.stats) state.stats[k] = clamp(state.stats[k] * 0.95, 0, 1200);
+		addLog(`${state.name} has become too lazy! Lost 5% on all stats.`);
+      } else {
+		addLog(`${state.name} has rested well! Recovered ${gain}% Energy.`);
+      }
+	  try{ saveState(); }catch(e){}
+	  try{ refreshPlayerUI(); }catch(e){}
+	  state.consecutiveRacesWithoutRestOrTrain = 0;
+	}
+});
+
+if(restInfirmBtn) restInfirmBtn.addEventListener("click", ()=>{
+  hideRestMenu();
+  if(state.training.totalTrains >= 25){
+      state.training.locked = true;
+      state.training.lockRaceCount = state.racesDone;
+      alert(`It's Race Day. No time to rest!`);
+      addLog("<span class='warn'>It's Race Day. No time to rest!</span>");
+	} else {
+	  if ((state.sp||0) < 5){ addLog("<span class='warn'>Not enough SP.</span>"); return; }
+	  state.sp = Math.max(0, (state.sp||0) - 5);
+	  const gain = 10 + rand(0,10);
+	  state.energy = Math.min(100, (state.energy||0) + gain);
+	  clearNegativeStatuses(); // guaranteed removal
+	  // sleeping interaction: do not count this as "sleep" for Night Owl reset;
+	  addLog(`${state.name} has rested well! Recovered ${gain}% Energy.`);
+	  addLog(`${state.name} has recovered from all of their Conditions!`);
+	  try{ saveState(); }catch(e){}
+	  try{ refreshPlayerUI(); }catch(e){}
+	  state.consecutiveRacesWithoutRestOrTrain = 0;
+	}
+});
 
   // training chips & button
   document.querySelectorAll("#trainingPanel .chip").forEach(ch=>ch.addEventListener("click", ()=>{
@@ -3418,7 +3799,7 @@ const AudioManager = (function(){
 		    playBtnMs = 19000;
 		  } else if (r > 0.60) {
 			chosen = 'meni.mp4';
-		    fadeMs = 144000;
+		    fadeMs = 170000;
 		    playBtnMs = 1390;
 		  } else if (r > 0.40) {
 			chosen = 'makedebut.mp4';
@@ -3679,13 +4060,4 @@ const CLICK_LIFETIME_MS = 330;
     const t = ev.touches && ev.touches[0];
     if (!t) return;
     spawnClickEffect(t.clientX, t.clientY);
-
   }, { passive: true });
-
-//UPDATE NOTES:
-//add moods - major
-//fix active abilities
-//give all umas abilities - major
-//fix stat cap bug
-//limit races
-//balance training gains
