@@ -913,13 +913,13 @@ function getMoodStatGainMult(moodName){
 function increaseMood(){
   // If Migraine present, mood cannot increase
   if(hasStatus && hasStatus("Migraine")){
-    addLog(`<div class="warn">Migraine prevents mood increases.</div>`);
+    addLog(`<div class="warn">${state.name} had a headache! No change in mood.</div>`);
     return;
   }
   state.mood = state.mood || "Normal";
   const idx = Math.max(0, MOOD_ORDER.indexOf(state.mood));
   state.mood = MOOD_ORDER[Math.min(MOOD_ORDER.length-1, idx + 1)];
-  addLog(`<div class="ok">Mood improved to <b>${state.mood}</b>!</div>`);
+  addLog(`<div class="ok">${player.name}'s Mood improved to <b>${state.mood}</b>!</div>`);
   saveState();
   try{ refreshPlayerUI(); }catch(e){}
 }
@@ -3521,7 +3521,7 @@ if(restRecreateBtn) restRecreateBtn.addEventListener("click", ()=>{
 	  const gain = 10 + rand(0,10);
 	  state.energy = Math.min(100, (state.energy||0) + gain);
 	  // Mood increase (unless Migraine)
-	  if(!hasStatus("Migraine")) increaseMood();
+	  increaseMood();
 	  // small removal chance for Practice Poor
 	  if(hasStatus("Practice Poor") && Math.random() < 0.10) removeStatus("Practice Poor");
 	  if(state.energy >= 100){
@@ -4064,4 +4064,5 @@ const CLICK_LIFETIME_MS = 330;
   
 //update notes:
 //fix training lock issue/s
+
 //add mood
