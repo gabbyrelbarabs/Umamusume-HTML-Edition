@@ -403,8 +403,8 @@ const OPPONENTS_THAT_CAN_BE_RUSHED = [
   "Mejiro McQueen",//
   "Tokai Teio",//
   "Kitasan Black",//
-  "Satono Diamond",
-  "Grass Wonder",
+  "Satono Diamond",//
+  "Grass Wonder",//
   "Haru Urara",//
   "Oguri Cap",//
   "Tamamo Cross",//
@@ -413,16 +413,16 @@ const OPPONENTS_THAT_CAN_BE_RUSHED = [
   "Symboli Rudolf",//
   "Rice Shower",//
   "Agnes Tachyon",//
-  "Silence Suzuka",
-  "King Halo",
+  "Silence Suzuka",//
+  "King Halo",//
   "T.M. Opera O",//
   "Mihono Bourbon",//
   "Super Creek",//
-  "Winning Ticket",
-  "Hishi Amazon",
+  "Winning Ticket",//
+  "Hishi Amazon",//
   "Still In Love",//
-  "Stay Gold",
-  "Orfevre",
+  "Stay Gold",//
+  "Orfevre",//
   "Fenomeno",//
   
   //not added yet
@@ -463,12 +463,12 @@ const OPPONENTS_THAT_CAN_BE_RUSHED = [
   "Maruzensky",//
   "Daiwa Scarlet",//
   "Vodka",//
-  "Matikanetannhauser",
-  "Meisho Doto",
-  "Taiki Shuttle",
-  "Biwa Hayahide",
-  "Air Shakur",
-  "Seiun Sky",
+  "Matikanetannhauser",//
+  "Meisho Doto",//
+  "Taiki Shuttle",//
+  "Biwa Hayahide",//
+  "Air Shakur",//
+  "Seiun Sky",//
 ];
 
 function findRacerByName(rs, name){
@@ -578,6 +578,33 @@ const OPPONENT_SPECIALS = {
       }, 15000 + 100);
     }
   },
+  "Silence Suzuka": {
+    id: "The View From The Lead Is Mine!",
+    chance: 0.0025, minPct: 50,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.SilenceSuzuka) return;
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.10;
+      r._mods.SilenceSuzuka = { ms, expires: rs.time + 9 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} has activated The View From The Lead Is Mine!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.SilenceSuzuka){ r.maxSpeed -= r._mods.SilenceSuzuka.ms; delete r._mods.SilenceSuzuka; } }, 9000);
+    }
+  },
+  "King Halo": {
+    id: "Prideful King",
+    chance: 1, minPct: 80,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.KingHalo) return;
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.10;
+	  const ac = r.acc * 0.10;
+      r._mods.KingHalo = { ms, expires: rs.time + 10 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} has activated Prideful King!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.KingHalo){ r.maxSpeed -= r._mods.KingHalo.ms; r.acc -= r._mods.KingHalo.ac; delete r._mods.KingHalo; } }, 10000);
+    }
+  },
   "Kitasan Black": {
     id: "Shout Of Victory",
     chance: 0.002, minPct: 40,
@@ -590,6 +617,91 @@ const OPPONENT_SPECIALS = {
       r.maxSpeed += ms; r.acc += ac;
       addLog(`<div class="warn">${r.name} has activated Shout Of Victory!</div>`);
       setTimeout(()=>{ if(r._mods && r._mods.Kitasan){ r.maxSpeed -= r._mods.Kitasan.ms; r.acc -= r._mods.Kitasan.ac; delete r._mods.Kitasan; } }, 8000);
+    }
+  },
+  "Satono Diamond": {
+    id: "Eternal Encompassing Shine",
+    chance: 0.004, minPct: 75,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.SatonoDiamond) return;
+      r._mods = r._mods || {};
+      const baseMax = r.maxSpeed || 0;
+      const baseAcc = r.acc || 0;
+      const isFirst = (typeof getCurrentRank === "function") ? (getCurrentRank(rs, r) === 1) : false;
+      const ms = baseMax * (isFirst ? 0.15 : 0.08);
+      const ac = baseAcc * 0.08;
+      r._mods.SatonoDiamond = { ms, ac, expires: (rs.time || 0) + 10 };
+      r.maxSpeed += ms;
+      r.acc += ac;
+      addLog(`<div class="warn">${r.name} activated Eternal Encompassing Shine!</div>`);
+      // revert after duration
+      setTimeout(()=>{
+        if(r._mods && r._mods.SatonoDiamond){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.SatonoDiamond.ms);
+          r.acc = Math.max(0, (r.acc || 0) - r._mods.SatonoDiamond.ac);
+          delete r._mods.SatonoDiamond;
+        }
+      }, 10000);
+    }
+  },
+  "Grass Wonder": {
+    id: "When There's A Will, There's A Way",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.GrassWonder) return;
+      const curRank = getCurrentRank(rs, r);
+      r._lastRank = (r._lastRank ?? curRank);
+      const inLate = rs.pct >= 75;
+      const passedSomeone = curRank < r._lastRank;
+      // Guaranteed activation if passing someone in Late
+      if(!inLate || !passedSomeone){
+        if(Math.random() > 0.002){
+          r._lastRank = curRank;
+          return;
+        }
+      }
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.12;
+      r._mods.GrassWonder = { ms, expires: (rs.time || 0) + 8 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} activated When There's A Will, There's A Way!</div>`);
+      setTimeout(()=>{
+        if(r._mods && r._mods.GrassWonder){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.GrassWonder.ms);
+          delete r._mods.GrassWonder;
+        }
+      }, 8000);
+      r._lastRank = curRank;
+    }
+  },
+  "Hishi Amazon": {
+    id: "You and Me! One-on-One!",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.HishiAmazon) return;
+      const curRank = getCurrentRank(rs, r);
+      r._lastRank = (r._lastRank ?? curRank);
+      const inLate = rs.pct >= 75;
+      const passedSomeone = curRank < r._lastRank;
+      // Guaranteed activation if passing someone in Late
+      if(!inLate || !passedSomeone){
+        if(Math.random() > 0.002){
+          r._lastRank = curRank;
+          return;
+        }
+      }
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.08;
+      r._mods.HishiAmazon = { ms, expires: (rs.time || 0) + 10 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} activated You and Me! One-on-One!</div>`);
+      setTimeout(()=>{
+        if(r._mods && r._mods.HishiAmazon){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.HishiAmazon.ms);
+          delete r._mods.HishiAmazon;
+        }
+      }, 10000);
+      r._lastRank = curRank;
     }
   },
   "Sakura Bakushin O": {
@@ -703,7 +815,6 @@ const OPPONENT_SPECIALS = {
     chance: 0.002, minPct: 40,
     activate: (r, rs) => {
       if(r._mods && r._mods.SuperCreek) return;
-      if(!r.reachedMiddle) return;
       r._mods = r._mods || {};
       const ms = r.maxSpeed * 0.12;
       const ac = r.acc * 0.12;
@@ -711,6 +822,66 @@ const OPPONENT_SPECIALS = {
       r.maxSpeed += ms; r.acc += ac;
       addLog(`<div class="warn">${r.name} has activated Swinging Maestro!</div>`);
       setTimeout(()=>{ if(r._mods && r._mods.SuperCreek){ r.maxSpeed -= r._mods.SuperCreek.ms; r.acc -= r._mods.SuperCreek.ac; delete r._mods.SuperCreek; } }, 10000);
+    }
+  },
+  "Winning Ticket": {
+    id: "Our Ticket to Win!",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.WinningTicket) return;
+      r._mods = r._mods || {};
+      const baseMax = r.maxSpeed || 0;
+      const baseAcc = r.acc || 0;
+      const isFront = (typeof getCurrentRank === "function") ? (getCurrentRank(rs, r) <= 3) : false;
+      const ms = baseMax * (isFront ? 0.12 : 0.1);
+      const ac = baseAcc * (isFront ? 0.12 : 0.1);
+      r._mods.WinningTicket = { ms, ac, expires: (rs.time || 0) + 8 };
+      r.maxSpeed += ms;
+      r.acc += ac;
+      addLog(`<div class="warn">${r.name} activated Our Ticket to Win!</div>`);
+      // revert after duration
+      setTimeout(()=>{
+        if(r._mods && r._mods.WinningTicket){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.WinningTicket.ms);
+          r.acc = Math.max(0, (r.acc || 0) - r._mods.WinningTicket.ac);
+          delete r._mods.WinningTicket;
+        }
+      }, 8000);
+    }
+  },
+  "Stay Gold": {
+    id: "In Search for Gold",
+    chance: 0.002, minPct: 50,
+    activate: (r, rs) => {
+      // distance gate (must be 2000m+)
+      const dist = rs.distance || (rs.race && rs.race.distance) || 0;
+      if(dist < 2000) return;
+      if(r._mods && r._mods.StayGold) return;
+      if(Math.random() > 0.002) return;
+      r._mods = r._mods || {};
+      const ac = r.acc * 0.50;
+      r._mods.StayGold = { ac, expires: (rs.time || 0) + 30 };
+      r.acc += ac;
+      addLog(`<div class="warn">${r.name} activated In Search for Gold!</div>`);
+      setTimeout(()=>{
+        if(r._mods && r._mods.StayGold){
+          r.acc = Math.max(0, (r.acc || 0) - r._mods.StayGold.ac);
+          delete r._mods.StayGold;
+        }
+      }, 30000);
+    }
+  },
+  "Orfevre": {
+    id: "None Shall Object My Rule",
+    chance: 0.002, minPct: 50,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.Orfevre) return;
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.10;
+      r._mods.Orfevre = { ms, expires: rs.time + 9 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} has activated None Shall Object My Rule!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.Orfevre){ r.maxSpeed -= r._mods.Orfevre.ms; delete r._mods.Orfevre; } }, 9000);
     }
   },
   "Maruzensky": {
@@ -759,6 +930,122 @@ const OPPONENT_SPECIALS = {
       setTimeout(()=>{ if(r._mods && r._mods.Vodka){ r.acc -= r._mods.Vodka.ac; r.regenPerTick = Math.max(0, r.regenPerTick - r._mods.Vodka.regen); delete r._mods.Vodka; } }, 15000);
     }
   },
+  "Matikanetannhauser": {
+    id: "Go, Go, Mun!",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.Matikanetannhauser) return;
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.05;
+      const ac = r.acc * 0.05;
+	  r.stamina += r.staminaMax * 0.5;
+      r._mods.Matikanetannhauser = { ms, ac, expires: rs.time + 10 };
+      r.maxSpeed += ms; r.acc += ac;
+      addLog(`<div class="warn">${r.name} has activated Go, Go, Mun!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.Matikanetannhauser){ r.maxSpeed -= r._mods.Matikanetannhauser.ms; r.acc -= r._mods.Matikanetannhauser.ac; delete r._mods.Matikanetannhauser; } }, 10000);
+    }
+  },
+  "Meisho Doto": {
+    id: "I Never Goof Up!",
+    chance: 0.002, minPct: 75,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.MeishoDoto) return;
+      const curRank = getCurrentRank(rs, r);
+      r._lastRank = (r._lastRank ?? curRank);
+      const position = rs.pct >= 50;
+      const passedSomeone = curRank < r._lastRank;
+      // Guaranteed activation if passing someone in Late
+      if(!position || !passedSomeone){
+        if(Math.random() > 0.002){
+          r._lastRank = curRank;
+          return;
+        }
+      }
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.1;
+      r._mods.MeishoDoto = { ms, expires: (rs.time || 0) + 9 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} activated I Never Goof Up!</div>`);
+      setTimeout(()=>{
+        if(r._mods && r._mods.MeishoDoto){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.MeishoDoto.ms);
+          delete r._mods.MeishoDoto;
+        }
+      }, 9000);
+      r._lastRank = curRank;
+    }
+  },
+  "Taiki Shuttle": {
+    id: "Shooting for Victory",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.TaikiShuttle) return;
+      r._mods = r._mods || {};
+      const ac = r.acc * 0.15;
+      r._mods.TaikiShuttle = { ms, ac, expires: rs.time + 10 };
+      r.maxSpeed += ms; r.acc += ac;
+      addLog(`<div class="warn">${r.name} has activated Shooting for Victory!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.TaikiShuttle){ r.acc -= r._mods.TaikiShuttle.ac; delete r._mods.TaikiShuttle; } }, 10000);
+    }
+  },
+  "Biwa Hayahide": {
+    id: "Therefore I Win!",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.BiwaHayahide) return;
+      const curRank = getCurrentRank(rs, r);
+      r._lastRank = (r._lastRank ?? curRank);
+      const position = rs.pct >= 75;
+      const passedSomeone = curRank < r._lastRank;
+      // Guaranteed activation if passing someone in Late
+      if(!position || !passedSomeone){
+        if(Math.random() > 0.002){
+          r._lastRank = curRank;
+          return;
+        }
+      }
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.15;
+      r._mods.BiwaHayahide = { ms, expires: (rs.time || 0) + 8 };
+      r.maxSpeed += ms;
+      addLog(`<div class="warn">${r.name} activated Therefore I Win!</div>`);
+      setTimeout(()=>{
+        if(r._mods && r._mods.BiwaHayahide){
+          r.maxSpeed = Math.max(11.1, r.maxSpeed - r._mods.BiwaHayahide.ms);
+          delete r._mods.BiwaHayahide;
+        }
+      }, 8000);
+      r._lastRank = curRank;
+    }
+  },
+  "Air Shakur": {
+    id: "Trigger: BEAT",
+    chance: 0.002, minPct: 40,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.AirShakur) return;
+      r._mods = r._mods || {};
+      const ms = r.maxSpeed * 0.05;
+      const regen = (r.regenPerTick || 0.1) * 0.1;
+      r._mods.AirShakur = { ms, regen, expires: rs.time + 8 };
+      r.maxSpeed += ms; r.regenPerTick = (r.regenPerTick || 0.1) + regen;
+      addLog(`<div class="warn">${r.name} has activated Trigger: BEAT!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.AirShakur){ r.maxSpeed -= r._mods.AirShakur.ms; r.regenPerTick = Math.max(0, r.regenPerTick - r._mods.AirShakur.regen); delete r._mods.AirShakur; } }, 8000);
+    }
+  },
+  "Seiun Sky": {
+    id: "Angling and Scheming",
+    chance: 0.005, minPct: 67,
+    activate: (r, rs) => {
+      if(r._mods && r._mods.SeiunSky) return;
+      const ms = r.maxSpeed * 0.08;
+      const ac = r.acc * 0.08;
+      r._mods = r._mods || {};
+      r._mods.SeiunSky = { ms, ac, expires: rs.time + 10 };
+      r.maxSpeed += ms; r.acc += ac;
+      addLog(`<div class="warn">${r.name} has activated Angling and Scheming!</div>`);
+      setTimeout(()=>{ if(r._mods && r._mods.SeiunSky){ r.maxSpeed -= r._mods.SeiunSky.ms; r.acc -= r._mods.SeiunSky.ac; delete r._mods.SeiunSky; } }, 10000);
+    }
+  },
   "Special Week": {
     id: "Shooting Star",
     chance: 0.002, minPct: 40,
@@ -790,18 +1077,19 @@ const OPPONENT_SPECIALS = {
     }
   },
   "Fenomeno": {
-    id: "Target Acquired!",
-    chance: 0.002, minPct: 40,
-    activate: (r, rs) => {
-      if(r._mods && r._mods.Fenomeno) return;
-      r._mods = r._mods || {};
-      const ms = r.maxSpeed * 0.1;
-      r._mods.Fenomeno = { ms, expires: rs.time + 10 };
-      r.maxSpeed += ms; r.acc += ac;
-      addLog(`<div class="warn">${r.name} has activated This Dance Is for Vittoria!</div>`);
-      setTimeout(()=>{ if(r._mods && r._mods.Fenomeno){ r.maxSpeed -= r._mods.Fenomeno.ms; r.acc -= r._mods.Fenomeno.ac; delete r._mods.Fenomeno; } }, 10000);
-    }
-  },
+  id: "Target Acquired!",
+  chance: 0.002, minPct: 40,
+  activate: (r, rs) => {
+    if(r._mods && r._mods.Fenomeno) return;
+    r._mods = r._mods || {};
+    const ms = r.maxSpeed * 0.1;
+    const ac = r.acc * 0.05;
+    r._mods.Fenomeno = { ms, ac, expires: rs.time + 10 };
+    r.maxSpeed += ms; r.acc += ac;
+    addLog(`<div class="warn">${r.name} has activated Target Acquired!</div>`);
+    setTimeout(()=>{ if(r._mods && r._mods.Fenomeno){ r.maxSpeed -= r._mods.Fenomeno.ms; r.acc -= r._mods.Fenomeno.ac; delete r._mods.Fenomeno; } }, 10000);
+  }
+},
   "Man o' War": {
     id: "The Greatest Stands Above All",
     chance: 0.002, minPct: 40,
@@ -911,23 +1199,24 @@ function getMoodStatGainMult(moodName){
 
 
 function increaseMood(){
-  // If Migraine present, mood cannot increase
-  if(hasStatus && hasStatus("Migraine")){
+  // Migraine blocks mood increases
+  if(hasStatus("Migraine")){
     addLog(`<div class="warn">${state.name} had a headache! No change in mood.</div>`);
     return;
   }
   state.mood = state.mood || "Normal";
   const idx = Math.max(0, MOOD_ORDER.indexOf(state.mood));
   state.mood = MOOD_ORDER[Math.min(MOOD_ORDER.length-1, idx + 1)];
-  addLog(`<div class="ok">${player.name}'s Mood improved to <b>${state.mood}</b>!</div>`);
+  addLog(`<div class="ok">${state.name}'s Mood improved to <b>${state.mood}</b>!</div>`);
   saveState();
   try{ refreshPlayerUI(); }catch(e){}
 }
+
 function decreaseMood(){
   state.mood = state.mood || "Normal";
   const idx = Math.max(0, MOOD_ORDER.indexOf(state.mood));
   state.mood = MOOD_ORDER[Math.max(0, idx - 1)];
-  addLog(`<div class="warn">${player.name}'s Mood fell to <b>${state.mood}</b></div>`);
+  addLog(`<div class="warn">${state.name}'s Mood fell to <b>${state.mood}</b></div>`);
   saveState();
   try{ refreshPlayerUI(); }catch(e){}
 }
@@ -1887,7 +2176,7 @@ function doTraining(stat){
   if(Math.random() < 0.01 && !hasStatus("Slacker")) addStatus("Slacker");
 
   // Migraine: 5% chance after training, doubled if the training failed
-  const migraineChance = failed ? 0.10 : 0.05;
+  const migraineChance = failed ? 0.10 : 0.033;
   if(Math.random() < migraineChance && !hasStatus("Migraine")) addStatus("Migraine");
 
   // NightOwl day-tracking: increment days not slept (training is activity without sleeping)
@@ -3478,13 +3767,13 @@ if(restCancelBtn) restCancelBtn.addEventListener("click", hideRestMenu);
 
 if(restSleepBtn) restSleepBtn.addEventListener("click", ()=>{
   hideRestMenu();
-  if(state.training.totalTrains >= 25){
+  if(state.training.totalTrains >= 30){
       state.training.locked = true;
       state.training.lockRaceCount = state.racesDone;
       alert(`It's Race Day. No time to rest!`);
       addLog("<span class='warn'>It's Race Day. No time to rest!</span>");
 	} else {
-      const values = [36, 37, 38, 39, 40, 41, 42];
+      const values = [46, 47, 48, 49, 50, 51, 52];
       const randomIndex = Math.floor(Math.random() * values.length);
       const randomValue = values[randomIndex];
       if(state.energy >= 100){
@@ -3510,7 +3799,7 @@ if(restSleepBtn) restSleepBtn.addEventListener("click", ()=>{
 
 if(restRecreateBtn) restRecreateBtn.addEventListener("click", ()=>{
   hideRestMenu();
-  if(state.training.totalTrains >= 25){
+  if(state.training.totalTrains >= 30){
       state.training.locked = true;
       state.training.lockRaceCount = state.racesDone;
       alert(`It's Race Day. No time to rest!`);
@@ -3518,7 +3807,7 @@ if(restRecreateBtn) restRecreateBtn.addEventListener("click", ()=>{
 	} else {
 	  if ((state.sp||0) < 10){ addLog("<span class='warn'>Not enough SP.</span>"); return; }
 	  state.sp = Math.max(0, (state.sp||0) - 10);
-	  const gain = 10 + rand(0,10);
+	  const gain = 10 + rand(0,23);
 	  state.energy = Math.min(100, (state.energy||0) + gain);
 	  // Mood increase (unless Migraine)
 	  increaseMood();
@@ -3538,7 +3827,7 @@ if(restRecreateBtn) restRecreateBtn.addEventListener("click", ()=>{
 
 if(restInfirmBtn) restInfirmBtn.addEventListener("click", ()=>{
   hideRestMenu();
-  if(state.training.totalTrains >= 25){
+  if(state.training.totalTrains >= 30){
       state.training.locked = true;
       state.training.lockRaceCount = state.racesDone;
       alert(`It's Race Day. No time to rest!`);
@@ -3546,7 +3835,7 @@ if(restInfirmBtn) restInfirmBtn.addEventListener("click", ()=>{
 	} else {
 	  if ((state.sp||0) < 5){ addLog("<span class='warn'>Not enough SP.</span>"); return; }
 	  state.sp = Math.max(0, (state.sp||0) - 5);
-	  const gain = 10 + rand(0,10);
+	  const gain = 10 + rand(0,23);
 	  state.energy = Math.min(100, (state.energy||0) + gain);
 	  clearNegativeStatuses(); // guaranteed removal
 	  // sleeping interaction: do not count this as "sleep" for Night Owl reset;
@@ -4063,6 +4352,4 @@ const CLICK_LIFETIME_MS = 330;
   }, { passive: true });
   
 //update notes:
-//fix training lock issue/s
-
-//add mood
+//add new characters
