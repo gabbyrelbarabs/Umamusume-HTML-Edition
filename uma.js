@@ -4352,4 +4352,8 @@ const CLICK_LIFETIME_MS = 330;
   }, { passive: true });
   
 //update notes:
+
 //add new characters
+//fix failed trainings
+//fix retire
+//balance races
